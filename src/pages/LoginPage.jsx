@@ -135,7 +135,7 @@ export default function LoginPage() {
       <div style={styles.page}>
         <div style={styles.card}>
         <img
-          src={require('../assets/hero-bouquet.jpg')}
+          src={require('../assets/Login.png')}
           alt="Woman holding a bouquet of white and pink roses"
           style={styles.image}
         />
