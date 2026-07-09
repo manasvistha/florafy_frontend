@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+
 const styles = {
   hero: {
     background: '#f7e9ee',
@@ -100,8 +102,8 @@ export default function Hero() {
           </p>
 
           <div style={styles.actions}>
-            <a href="/shop" style={styles.btn}>Shop Now</a>
-            <a href="/build-bouquet" style={styles.btn}>Customize Yours</a>
+            <Link to="/login" style={styles.btn}>Shop Now</Link>
+            <Link to="/login" style={styles.btn}>Customize Yours</Link>
           </div>
         </div>
 
