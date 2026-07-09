@@ -14,7 +14,7 @@ const styles = {
   },
 
   card: {
-    width: "1100px",
+    width: "1000px",
     background: "#edd1db",
     borderRadius: "20px",
     display: "grid",
