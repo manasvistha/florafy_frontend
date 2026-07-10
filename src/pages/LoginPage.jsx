@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import LoginImage from "../assets/Login.png";
 
@@ -28,7 +28,7 @@ const styles = {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    background: "#FCF3F6", 
+    background: "#FCF3F6",
   },
 
   image: {
@@ -158,6 +158,14 @@ function AppleIcon() {
 }
 
 export default function LoginPage() {
+  const navigate = useNavigate();
+
+  const handleLogin = (e) => {
+    e.preventDefault();
+    // TODO: replace with real authentication call once the backend is wired up
+    navigate("/dashboard");
+  };
+
   return (
     <>
       <Navbar />
@@ -203,17 +211,17 @@ export default function LoginPage() {
               </a>
             </div>
 
-            <button style={styles.loginBtn}>
+            <button style={styles.loginBtn} onClick={handleLogin}>
               Login
             </button>
 
             <div style={styles.socialRow}>
-              <button style={styles.socialBtn}>
+              <button style={styles.socialBtn} onClick={handleLogin}>
                 <GoogleIcon />
                 Sign in with Google
               </button>
 
-              <button style={styles.socialBtn}>
+              <button style={styles.socialBtn} onClick={handleLogin}>
                 <AppleIcon />
                 Sign in with Apple
               </button>

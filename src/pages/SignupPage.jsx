@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import SignupImage from "../assets/Login.png";
 
@@ -107,6 +107,14 @@ const styles = {
 };
 
 export default function SignupPage() {
+  const navigate = useNavigate();
+
+  const handleSignup = (e) => {
+    e.preventDefault();
+    // TODO: replace with real signup call once the backend is wired up
+    navigate("/dashboard");
+  };
+
   return (
     <>
       <Navbar />
@@ -172,7 +180,7 @@ export default function SignupPage() {
               style={styles.input}
             />
 
-            <button style={styles.button}>
+            <button style={styles.button} onClick={handleSignup}>
               Join Us
             </button>
 
