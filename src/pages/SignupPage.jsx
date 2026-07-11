@@ -14,10 +14,10 @@ const styles = {
   },
 
   card: {
-    width: "900px",
+    width: "820px",
     maxWidth: "95%",
     background: "#edd1db",
-    borderRadius: "18px",
+    borderRadius: "16px",
     display: "grid",
     gridTemplateColumns: "1fr 1fr",
     overflow: "hidden",
