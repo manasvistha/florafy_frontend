@@ -82,7 +82,7 @@ const styles = {
   },
   grid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(6, 1fr)',
+    gridTemplateColumns: 'repeat(5, 1fr)',
     gap: 20,
   },
   card: {
