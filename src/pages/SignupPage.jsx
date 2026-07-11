@@ -14,9 +14,10 @@ const styles = {
   },
 
   card: {
-    width: "1100px",
+    width: "900px",
+    maxWidth: "95%",
     background: "#edd1db",
-    borderRadius: "20px",
+    borderRadius: "18px",
     display: "grid",
     gridTemplateColumns: "1fr 1fr",
     overflow: "hidden",
@@ -24,7 +25,7 @@ const styles = {
   },
 
   imageContainer: {
-    padding: "40px",
+    padding: "24px",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
@@ -33,69 +34,69 @@ const styles = {
 
   image: {
     width: "100%",
-    maxWidth: "450px",
-    height: "550px",
+    maxWidth: "320px",
+    height: "430px",
     objectFit: "cover",
-    borderRadius: "18px",
+    borderRadius: "14px",
     boxShadow: "0 8px 25px rgba(0,0,0,.15)",
   },
 
   form: {
-    padding: "60px",
+    padding: "40px",
     display: "flex",
     flexDirection: "column",
     justifyContent: "center",
   },
 
   heading: {
-    fontSize: "46px",
+    fontSize: "32px",
     fontWeight: "700",
     color: "#1b5e20",
-    marginBottom: "10px",
+    marginBottom: "8px",
   },
 
   subtext: {
-    fontSize: "18px",
+    fontSize: "14px",
     color: "#4e6655",
-    marginBottom: "30px",
+    marginBottom: "22px",
   },
 
   label: {
-    fontSize: "15px",
+    fontSize: "13px",
     fontWeight: "600",
-    marginBottom: "8px",
+    marginBottom: "6px",
     color: "#333",
   },
 
   input: {
     width: "100%",
-    padding: "14px 16px",
+    padding: "11px 14px",
     borderRadius: "8px",
     border: "1px solid #d9b8c4",
-    background: "#FFF9FB",
-    fontSize: "15px",
+    background: "#fff",
+    fontSize: "14px",
     outline: "none",
-    marginBottom: "18px",
+    marginBottom: "14px",
     boxSizing: "border-box",
   },
 
   button: {
     width: "100%",
-    padding: "14px",
+    padding: "12px",
     background: "#2e5d2f",
     color: "#fff",
     border: "none",
     borderRadius: "8px",
-    fontSize: "15px",
+    fontSize: "14px",
     fontWeight: "600",
     cursor: "pointer",
-    marginTop: "15px",
-    marginBottom: "25px",
+    marginTop: "10px",
+    marginBottom: "18px",
   },
 
   footerText: {
     textAlign: "center",
-    fontSize: "14px",
+    fontSize: "13px",
     color: "#555",
   },
 
@@ -111,7 +112,6 @@ export default function SignupPage() {
 
   const handleSignup = (e) => {
     e.preventDefault();
-    // TODO: replace with real signup call once the backend is wired up
     navigate("/dashboard");
   };
 
@@ -132,17 +132,13 @@ export default function SignupPage() {
 
           <div style={styles.form}>
 
-            <h1 style={styles.heading}>
-              Create your account
-            </h1>
+            <h1 style={styles.heading}>Create Account</h1>
 
             <p style={styles.subtext}>
               Join Florafy and start shopping beautiful flowers.
             </p>
 
-            <label style={styles.label}>
-              Full Name
-            </label>
+            <label style={styles.label}>Full Name</label>
 
             <input
               type="text"
@@ -150,19 +146,14 @@ export default function SignupPage() {
               style={styles.input}
             />
 
-            <label style={styles.label}>
-              Email Address
-            </label>
+            <label style={styles.label}>Email Address</label>
 
             <input
               type="email"
               placeholder="Enter your email"
               style={styles.input}
-            />
-
-            <label style={styles.label}>
-              Password
-            </label>
+            /> 
+                        <label style={styles.label}>Password</label>
 
             <input
               type="password"
@@ -170,9 +161,7 @@ export default function SignupPage() {
               style={styles.input}
             />
 
-            <label style={styles.label}>
-              Confirm Password
-            </label>
+            <label style={styles.label}>Confirm Password</label>
 
             <input
               type="password"
@@ -180,13 +169,19 @@ export default function SignupPage() {
               style={styles.input}
             />
 
-            <button style={styles.button} onClick={handleSignup}>
-              Join Us
+            <button
+              style={styles.button}
+              onClick={handleSignup}
+            >
+              Create Account
             </button>
 
             <p style={styles.footerText}>
               Already have an account?{" "}
-              <Link to="/login" style={styles.loginLink}>
+              <Link
+                to="/login"
+                style={styles.loginLink}
+              >
                 Login
               </Link>
             </p>

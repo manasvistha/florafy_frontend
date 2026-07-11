@@ -14,9 +14,10 @@ const styles = {
   },
 
   card: {
-    width: "1100px",
+    width: "820px",
+    maxWidth: "95%",
     background: "#edd1db",
-    borderRadius: "20px",
+    borderRadius: "16px",
     display: "grid",
     gridTemplateColumns: "1fr 1fr",
     overflow: "hidden",
@@ -24,7 +25,7 @@ const styles = {
   },
 
   imageContainer: {
-    padding: "40px",
+    padding: "24px",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
@@ -33,86 +34,86 @@ const styles = {
 
   image: {
     width: "100%",
-    maxWidth: "450px",
-    height: "550px",
+    maxWidth: "320px",
+    height: "420px",
     objectFit: "cover",
-    borderRadius: "18px",
+    borderRadius: "14px",
     boxShadow: "0 8px 25px rgba(0,0,0,.15)",
   },
 
   form: {
-    padding: "70px 60px",
+    padding: "48px 42px",
     display: "flex",
     flexDirection: "column",
     justifyContent: "center",
   },
 
   heading: {
-    fontSize: "46px",
+    fontSize: "32px",
     fontWeight: "700",
     color: "#1b5e20",
-    marginBottom: "10px",
+    marginBottom: "8px",
   },
 
   subtext: {
-    fontSize: "18px",
+    fontSize: "14px",
     color: "#4e6655",
-    marginBottom: "35px",
+    marginBottom: "24px",
   },
 
   label: {
-    fontSize: "15px",
+    fontSize: "13px",
     fontWeight: "600",
-    marginBottom: "8px",
+    marginBottom: "6px",
     color: "#333",
   },
 
   input: {
     width: "100%",
-    padding: "14px 16px",
+    padding: "11px 14px",
     borderRadius: "8px",
     border: "1px solid #d9b8c4",
-    fontSize: "15px",
+    fontSize: "14px",
     outline: "none",
-    marginBottom: "20px",
+    marginBottom: "14px",
     boxSizing: "border-box",
   },
 
   forgotRow: {
     display: "flex",
     justifyContent: "flex-end",
-    marginTop: "-10px",
-    marginBottom: "25px",
+    marginTop: "-6px",
+    marginBottom: "18px",
   },
 
   forgotLink: {
-    fontSize: "13px",
+    fontSize: "12px",
     color: "#d32f2f",
     textDecoration: "none",
   },
 
   loginBtn: {
     width: "100%",
-    padding: "14px",
+    padding: "12px",
     background: "#2e5d2f",
     color: "#fff",
     border: "none",
     borderRadius: "8px",
-    fontSize: "15px",
+    fontSize: "14px",
     fontWeight: "600",
     cursor: "pointer",
-    marginBottom: "25px",
+    marginBottom: "18px",
   },
 
   socialRow: {
     display: "flex",
-    gap: "12px",
-    marginBottom: "30px",
+    gap: "10px",
+    marginBottom: "22px",
   },
 
   socialBtn: {
     flex: 1,
-    padding: "12px",
+    padding: "10px",
     borderRadius: "8px",
     border: "1px solid #ddd",
     background: "#FFF8FA",
@@ -122,12 +123,12 @@ const styles = {
     gap: "8px",
     cursor: "pointer",
     fontWeight: "500",
-    fontSize: "14px",
+    fontSize: "13px",
   },
 
   footerText: {
     textAlign: "center",
-    fontSize: "14px",
+    fontSize: "13px",
     color: "#555",
   },
 

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Heart, ShoppingBag, Search } from 'lucide-react';
+import { Heart, ShoppingBag, Search, User } from 'lucide-react';
 
 const NAV_LINKS = ['Home', 'Shop', 'Build Bouquet', 'My Account'];
 
@@ -108,6 +108,9 @@ export default function Navbar() {
           <button style={styles.iconBtn} aria-label="Cart">
             <ShoppingBag size={20} />
           </button>
+          <Link to="/my-account" style={styles.iconBtn} aria-label="My Account">
+            <User size={20} />
+          </Link>
         </div>
       </div>
     </header>
