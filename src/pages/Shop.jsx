@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Heart, Plus, CalendarDays, Wallet, Truck } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import { PRODUCTS } from '../data/products';
+import { useWishlist } from '../context/WishlistContext';
 
 const CATEGORIES = ['All Flowers', 'Birthday', 'Anniversary', 'Decoration'];
 const OCCASIONS = ['Birthday', 'Anniversary', 'Decoration'];
@@ -281,13 +282,11 @@ const DEFAULT_FILTERS = { occasion: '', maxPrice: PRICE_MAX, delivery: 'express'
 
 export default function Shop() {
   const [activeCategory, setActiveCategory] = useState('All Flowers');
-  const [wishlist, setWishlist] = useState({});
+  const { isWished, toggle } = useWishlist();
 
   // Draft = what's shown in the sidebar; applied = what actually filters the grid.
   const [draft, setDraft] = useState(DEFAULT_FILTERS);
   const [applied, setApplied] = useState(DEFAULT_FILTERS);
-
-  const toggleWish = (id) => setWishlist((w) => ({ ...w, [id]: !w[id] }));
 
   const applyFilters = () => setApplied(draft);
   const clearAll = () => {
@@ -446,13 +445,13 @@ export default function Shop() {
                     aria-label="Add to wishlist"
                     onClick={(e) => {
                       e.preventDefault();
-                      toggleWish(product.id);
+                      toggle(product.id);
                     }}
                   >
                     <Heart
                       size={14}
                       color="#5c2436"
-                      fill={wishlist[product.id] ? '#5c2436' : 'none'}
+                      fill={isWished(product.id) ? '#5c2436' : 'none'}
                     />
                   </button>
                 </div>

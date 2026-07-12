@@ -1,5 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { Heart, ShoppingBag, Search, User, LogOut } from 'lucide-react';
+import { useWishlist } from '../context/WishlistContext';
 
 const NAV_LINKS_BY_VARIANT = {
   landing: [
@@ -84,6 +85,24 @@ const styles = {
     cursor: 'pointer',
     display: 'flex',
     padding: 4,
+    position: 'relative',
+  },
+  badge: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    minWidth: 16,
+    height: 16,
+    padding: '0 4px',
+    borderRadius: 999,
+    background: '#5c2436',
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: 700,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    boxSizing: 'border-box',
   },
   logoutBtn: {
     display: 'inline-flex',
@@ -104,6 +123,7 @@ export default function Navbar({ variant = 'landing' }) {
   const navigate = useNavigate();
   const navLinks = NAV_LINKS_BY_VARIANT[variant] || NAV_LINKS_BY_VARIANT.landing;
   const isDashboard = variant === 'dashboard';
+  const { count } = useWishlist();
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -136,9 +156,10 @@ export default function Navbar({ variant = 'landing' }) {
               style={styles.searchInput}
             />
           </div>
-          <button style={styles.iconBtn} aria-label="Wishlist">
+          <Link to="/wishlist" style={styles.iconBtn} aria-label="Wishlist">
             <Heart size={20} />
-          </button>
+            {count > 0 && <span style={styles.badge}>{count}</span>}
+          </Link>
           <button style={styles.iconBtn} aria-label="Cart">
             <ShoppingBag size={20} />
           </button>

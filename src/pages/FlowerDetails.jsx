@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Heart, ShoppingBag, Minus, Plus, ArrowLeft, Truck, Leaf } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import { getProductById } from '../data/products';
+import { useWishlist } from '../context/WishlistContext';
 
 const styles = {
   page: {
@@ -200,7 +201,8 @@ export default function FlowerDetails() {
   const product = getProductById(id);
 
   const [quantity, setQuantity] = useState(1);
-  const [wished, setWished] = useState(false);
+  const { isWished, toggle } = useWishlist();
+  const wished = product ? isWished(product.id) : false;
 
   if (!product) {
     return (
@@ -263,7 +265,7 @@ export default function FlowerDetails() {
                 <ShoppingBag size={16} /> Add to Cart · Rs. {product.price * quantity}
               </button>
               <button
-                onClick={() => setWished((w) => !w)}
+                onClick={() => toggle(product.id)}
                 style={{ ...styles.wishBtn, ...(wished ? styles.wishBtnActive : {}) }}
                 aria-label="Add to wishlist"
               >

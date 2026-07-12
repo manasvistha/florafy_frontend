@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Heart, Plus } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import { PRODUCTS } from '../data/products';
+import { useWishlist } from '../context/WishlistContext';
 
 const CATEGORIES = ['All Flowers', 'Birthday', 'Anniversary', 'Decoration'];
 
@@ -139,6 +140,7 @@ const styles = {
 
 export default function Dashboard() {
   const [activeCategory, setActiveCategory] = useState('All Flowers');
+  const { isWished, toggle } = useWishlist();
 
   return (
     <div style={styles.page}>
@@ -180,9 +182,14 @@ export default function Dashboard() {
                   aria-label="Add to wishlist"
                   onClick={(e) => {
                     e.preventDefault();
+                    toggle(product.id);
                   }}
                 >
-                  <Heart size={14} />
+                  <Heart
+                    size={14}
+                    color="#5c2436"
+                    fill={isWished(product.id) ? '#5c2436' : 'none'}
+                  />
                 </button>
               </div>
               <div style={styles.info}>
