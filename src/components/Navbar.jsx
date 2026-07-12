@@ -1,7 +1,22 @@
-import { Link } from 'react-router-dom';
-import { Heart, ShoppingBag, Search, User } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Heart, ShoppingBag, Search, User, LogOut } from 'lucide-react';
 
-const NAV_LINKS = ['Home', 'Shop', 'Build Bouquet', 'My Account'];
+const NAV_LINKS_BY_VARIANT = {
+  landing: [
+    { label: 'Home', to: '/' },
+    { label: 'Shop', to: '/shop' },
+    { label: 'Build Bouquet', to: '/build-bouquet' },
+    { label: 'My Account', to: '/my-account' },
+  ],
+  // Dashboard is for logged-in users, so it drops the landing-style links
+  // (Home, etc.) in favour of shopping/account-oriented navigation.
+  dashboard: [
+    { label: 'Shop', to: '/shop' },
+    { label: 'Build Bouquet', to: '/build-bouquet' },
+    { label: 'My Orders', to: '/my-orders' },
+    { label: 'Wishlist', to: '/wishlist' },
+  ],
+};
 
 const styles = {
   navbar: {
@@ -70,23 +85,42 @@ const styles = {
     display: 'flex',
     padding: 4,
   },
+  logoutBtn: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 6,
+    background: '#5c2436',
+    color: '#fff',
+    border: 'none',
+    borderRadius: 999,
+    padding: '9px 16px',
+    fontSize: 13,
+    fontWeight: 600,
+    cursor: 'pointer',
+  },
 };
 
-export default function Navbar() {
+export default function Navbar({ variant = 'landing' }) {
+  const navigate = useNavigate();
+  const navLinks = NAV_LINKS_BY_VARIANT[variant] || NAV_LINKS_BY_VARIANT.landing;
+  const isDashboard = variant === 'dashboard';
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    navigate('/login');
+  };
+
   return (
     <header style={styles.navbar}>
       <div style={styles.inner}>
-        <Link to="/" style={styles.logo}>
+        <Link to={isDashboard ? '/dashboard' : '/'} style={styles.logo}>
           <img src="/image/florafy-logo.png" alt="Florafy" style={styles.logoImg} />
         </Link>
 
         <nav style={styles.links} aria-label="Main navigation">
-          {NAV_LINKS.map((label) => (
-            <Link
-              key={label}
-              to={`/${label.toLowerCase().replace(/\s+/g, '-')}`}
-              style={styles.link}
-            >
+          {navLinks.map(({ label, to }) => (
+            <Link key={label} to={to} style={styles.link}>
               {label}
             </Link>
           ))}
@@ -108,9 +142,16 @@ export default function Navbar() {
           <button style={styles.iconBtn} aria-label="Cart">
             <ShoppingBag size={20} />
           </button>
-          <Link to="/my-account" style={styles.iconBtn} aria-label="My Account">
-            <User size={20} />
-          </Link>
+
+          {isDashboard ? (
+            <button style={styles.logoutBtn} onClick={handleLogout} aria-label="Log out">
+              <LogOut size={16} /> Logout
+            </button>
+          ) : (
+            <Link to="/my-account" style={styles.iconBtn} aria-label="My Account">
+              <User size={20} />
+            </Link>
+          )}
         </div>
       </div>
     </header>

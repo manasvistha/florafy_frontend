@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import SignupImage from "../assets/Login.png";
+import { registerUser } from "../services/api";
 
 const styles = {
   page: {
@@ -14,8 +16,8 @@ const styles = {
   },
 
   card: {
-    width: "820px",
-    maxWidth: "95%",
+    width: "100%",
+    maxWidth: "860px",
     background: "#edd1db",
     borderRadius: "16px",
     display: "grid",
@@ -34,15 +36,15 @@ const styles = {
 
   image: {
     width: "100%",
-    maxWidth: "320px",
-    height: "430px",
+    maxWidth: "360px",
+    height: "420px",
     objectFit: "cover",
     borderRadius: "14px",
     boxShadow: "0 8px 25px rgba(0,0,0,.15)",
   },
 
   form: {
-    padding: "40px",
+    padding: "40px 44px",
     display: "flex",
     flexDirection: "column",
     justifyContent: "center",
@@ -56,15 +58,25 @@ const styles = {
   },
 
   subtext: {
-    fontSize: "14px",
+    fontSize: "15px",
     color: "#4e6655",
-    marginBottom: "22px",
+    marginBottom: "24px",
+  },
+
+  errorBox: {
+    background: "#fdecea",
+    border: "1px solid #f5c2c0",
+    color: "#c62828",
+    fontSize: "14px",
+    padding: "10px 14px",
+    borderRadius: "8px",
+    marginBottom: "20px",
   },
 
   label: {
-    fontSize: "13px",
+    fontSize: "15px",
     fontWeight: "600",
-    marginBottom: "6px",
+    marginBottom: "8px",
     color: "#333",
   },
 
@@ -73,11 +85,22 @@ const styles = {
     padding: "11px 14px",
     borderRadius: "8px",
     border: "1px solid #d9b8c4",
-    background: "#fff",
+    background: "#FFF9FB",
     fontSize: "14px",
     outline: "none",
     marginBottom: "14px",
     boxSizing: "border-box",
+  },
+
+  inputError: {
+    border: "1px solid #e57373",
+  },
+
+  hintText: {
+    fontSize: "12px",
+    color: "#777",
+    marginTop: "-12px",
+    marginBottom: "18px",
   },
 
   button: {
@@ -90,13 +113,18 @@ const styles = {
     fontSize: "14px",
     fontWeight: "600",
     cursor: "pointer",
-    marginTop: "10px",
+    marginTop: "8px",
     marginBottom: "18px",
+  },
+
+  buttonDisabled: {
+    opacity: 0.7,
+    cursor: "not-allowed",
   },
 
   footerText: {
     textAlign: "center",
-    fontSize: "13px",
+    fontSize: "14px",
     color: "#555",
   },
 
@@ -110,9 +138,77 @@ const styles = {
 export default function SignupPage() {
   const navigate = useNavigate();
 
-  const handleSignup = (e) => {
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+    if (error) setError("");
+  };
+
+  const validatePassword = (password) => {
+    if (password.length < 8) {
+      return "Password must be at least 8 characters long.";
+    }
+    if (!/[A-Z]/.test(password)) {
+      return "Password must include at least one uppercase letter.";
+    }
+    if (!/[a-z]/.test(password)) {
+      return "Password must include at least one lowercase letter.";
+    }
+    if (!/[0-9]/.test(password)) {
+      return "Password must include at least one number.";
+    }
+    if (!/[!@#$%^&*(),.?":{}|<>_\-]/.test(password)) {
+      return "Password must include at least one special character (e.g. ! @ # $ %).";
+    }
+    return null;
+  };
+
+  const handleSignup = async (e) => {
     e.preventDefault();
-    navigate("/dashboard");
+    setError("");
+
+    if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword) {
+      setError("Please fill in all fields.");
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
+    const passwordError = validatePassword(formData.password);
+    if (passwordError) {
+      setError(passwordError);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const data = await registerUser({
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+      });
+
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+
+      navigate("/dashboard");
+    } catch (err) {
+      // This is where "an account with this email already exists" shows up
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -132,56 +228,72 @@ export default function SignupPage() {
 
           <div style={styles.form}>
 
-            <h1 style={styles.heading}>Create Account</h1>
+            <h1 style={styles.heading}>
+              Create your account
+            </h1>
 
             <p style={styles.subtext}>
               Join Florafy and start shopping beautiful flowers.
             </p>
 
-            <label style={styles.label}>Full Name</label>
+            {error && <div style={styles.errorBox}>{error}</div>}
 
-            <input
-              type="text"
-              placeholder="Enter your full name"
-              style={styles.input}
-            />
+            <form onSubmit={handleSignup}>
+              <label style={styles.label}>Full Name</label>
+              <input
+                type="text"
+                name="name"
+                placeholder="Enter your full name"
+                value={formData.name}
+                onChange={handleChange}
+                style={{ ...styles.input, ...(error ? styles.inputError : {}) }}
+              />
 
-            <label style={styles.label}>Email Address</label>
+              <label style={styles.label}>Email Address</label>
+              <input
+                type="email"
+                name="email"
+                placeholder="Enter your email"
+                value={formData.email}
+                onChange={handleChange}
+                style={{ ...styles.input, ...(error ? styles.inputError : {}) }}
+              />
 
-            <input
-              type="email"
-              placeholder="Enter your email"
-              style={styles.input}
-            /> 
-                        <label style={styles.label}>Password</label>
+              <label style={styles.label}>Password</label>
+              <input
+                type="password"
+                name="password"
+                placeholder="Enter your password"
+                value={formData.password}
+                onChange={handleChange}
+                style={{ ...styles.input, ...(error ? styles.inputError : {}) }}
+              />
+              <p style={styles.hintText}>
+                At least 8 characters, with uppercase, lowercase, a number, and a special character.
+              </p>
 
-            <input
-              type="password"
-              placeholder="Enter your password"
-              style={styles.input}
-            />
+              <label style={styles.label}>Confirm Password</label>
+              <input
+                type="password"
+                name="confirmPassword"
+                placeholder="Confirm your password"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                style={{ ...styles.input, ...(error ? styles.inputError : {}) }}
+              />
 
-            <label style={styles.label}>Confirm Password</label>
-
-            <input
-              type="password"
-              placeholder="Confirm your password"
-              style={styles.input}
-            />
-
-            <button
-              style={styles.button}
-              onClick={handleSignup}
-            >
-              Create Account
-            </button>
+              <button
+                type="submit"
+                disabled={loading}
+                style={{ ...styles.button, ...(loading ? styles.buttonDisabled : {}) }}
+              >
+                {loading ? "Creating account..." : "Join Us"}
+              </button>
+            </form>
 
             <p style={styles.footerText}>
               Already have an account?{" "}
-              <Link
-                to="/login"
-                style={styles.loginLink}
-              >
+              <Link to="/login" style={styles.loginLink}>
                 Login
               </Link>
             </p>

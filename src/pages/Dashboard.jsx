@@ -1,24 +1,10 @@
 import { useState } from 'react';
-import { Heart, Plus, Search } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Heart, Plus } from 'lucide-react';
 import Navbar from '../components/Navbar';
+import { PRODUCTS } from '../data/products';
 
 const CATEGORIES = ['All Flowers', 'Birthday', 'Anniversary', 'Decoration'];
-
-const PRODUCTS = [
-  { id: 1, name: 'Rose', price: 850, image: '/image/products/rose.jpg' },
-  { id: 2, name: 'Tulip', price: 1000, image: '/image/products/tulip.jpg' },
-  { id: 3, name: 'Lily', price: 900, image: '/image/products/lily.jpg' },
-  { id: 4, name: 'Sunflower', price: 1200, image: '/image/products/sunflower.jpg' },
-  { id: 5, name: 'Pink Rose', price: 1000, image: '/image/products/rosepink.jpg' },
-  { id: 6, name: 'Mixed', price: 900, image: '/image/products/mixed.jpg' },
-  { id: 7, name: 'Hibiscus', price: 500, image: '/image/products/hibiscus.jpg' },
-  { id: 8, name: 'Daisy', price: 400, image: '/image/products/daisy.jpg' },
-  { id: 9, name: 'Blue Rose', price: 1600, image: '/image/products/roseblue.jpg' },
-  { id: 10, name: 'Lotus', price: 800, image: '/image/products/lotus.jpg' },
-  { id: 11, name: 'Mixed Rose', price: 850, image: '/image/products/rosemix.jpg' },
-  { id: 12, name: 'Tulip', price: 1000, image: '/image/products/tulip.jpg' },
-  { id: 13, name: 'Orchid', price: 1500, image: '/image/products/orchid.jpg' },
-];
 
 const styles = {
   page: {
@@ -90,6 +76,10 @@ const styles = {
     borderRadius: 14,
     overflow: 'hidden',
     boxShadow: '0 4px 14px rgba(0,0,0,0.06)',
+    textDecoration: 'none',
+    color: 'inherit',
+    display: 'block',
+    cursor: 'pointer',
   },
   imageWrap: {
     position: 'relative',
@@ -152,7 +142,7 @@ export default function Dashboard() {
 
   return (
     <div style={styles.page}>
-      <Navbar />
+      <Navbar variant="dashboard" />
 
       <div style={styles.container}>
         <div style={styles.pillRow}>
@@ -178,21 +168,37 @@ export default function Dashboard() {
 
         <div style={styles.grid}>
           {PRODUCTS.map((product, index) => (
-            <div style={styles.card} key={`${product.id}-${index}`}>
+            <Link
+              to={`/flower/${product.id}`}
+              style={styles.card}
+              key={`${product.id}-${index}`}
+            >
               <div style={styles.imageWrap}>
                 <img src={product.image} alt={product.name} style={styles.image} />
-                <button style={styles.heartBtn} aria-label="Add to wishlist">
+                <button
+                  style={styles.heartBtn}
+                  aria-label="Add to wishlist"
+                  onClick={(e) => {
+                    e.preventDefault();
+                  }}
+                >
                   <Heart size={14} />
                 </button>
               </div>
               <div style={styles.info}>
                 <p style={styles.name}>{product.name}</p>
                 <p style={styles.price}>Rs. {product.price}</p>
-                <button style={styles.addBtn} aria-label="Add to cart">
+                <button
+                  style={styles.addBtn}
+                  aria-label="Add to cart"
+                  onClick={(e) => {
+                    e.preventDefault();
+                  }}
+                >
                   <Plus size={14} color="#fff" />
                 </button>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </div>

@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import LoginImage from "../assets/Login.png";
+import { loginUser } from "../services/api";
 
 const styles = {
   page: {
@@ -14,8 +16,8 @@ const styles = {
   },
 
   card: {
-    width: "820px",
-    maxWidth: "95%",
+    width: "100%",
+    maxWidth: "860px",
     background: "#edd1db",
     borderRadius: "16px",
     display: "grid",
@@ -34,7 +36,7 @@ const styles = {
 
   image: {
     width: "100%",
-    maxWidth: "320px",
+    maxWidth: "360px",
     height: "420px",
     objectFit: "cover",
     borderRadius: "14px",
@@ -42,7 +44,7 @@ const styles = {
   },
 
   form: {
-    padding: "48px 42px",
+    padding: "40px 44px",
     display: "flex",
     flexDirection: "column",
     justifyContent: "center",
@@ -56,15 +58,25 @@ const styles = {
   },
 
   subtext: {
-    fontSize: "14px",
+    fontSize: "15px",
     color: "#4e6655",
     marginBottom: "24px",
   },
 
+  errorBox: {
+    background: "#fdecea",
+    border: "1px solid #f5c2c0",
+    color: "#c62828",
+    fontSize: "14px",
+    padding: "10px 14px",
+    borderRadius: "8px",
+    marginBottom: "20px",
+  },
+
   label: {
-    fontSize: "13px",
+    fontSize: "15px",
     fontWeight: "600",
-    marginBottom: "6px",
+    marginBottom: "8px",
     color: "#333",
   },
 
@@ -75,8 +87,12 @@ const styles = {
     border: "1px solid #d9b8c4",
     fontSize: "14px",
     outline: "none",
-    marginBottom: "14px",
+    marginBottom: "16px",
     boxSizing: "border-box",
+  },
+
+  inputError: {
+    border: "1px solid #e57373",
   },
 
   forgotRow: {
@@ -87,7 +103,7 @@ const styles = {
   },
 
   forgotLink: {
-    fontSize: "12px",
+    fontSize: "13px",
     color: "#d32f2f",
     textDecoration: "none",
   },
@@ -105,15 +121,20 @@ const styles = {
     marginBottom: "18px",
   },
 
+  loginBtnDisabled: {
+    opacity: 0.7,
+    cursor: "not-allowed",
+  },
+
   socialRow: {
     display: "flex",
-    gap: "10px",
-    marginBottom: "22px",
+    gap: "12px",
+    marginBottom: "20px",
   },
 
   socialBtn: {
     flex: 1,
-    padding: "10px",
+    padding: "12px",
     borderRadius: "8px",
     border: "1px solid #ddd",
     background: "#FFF8FA",
@@ -123,12 +144,12 @@ const styles = {
     gap: "8px",
     cursor: "pointer",
     fontWeight: "500",
-    fontSize: "13px",
+    fontSize: "14px",
   },
 
   footerText: {
     textAlign: "center",
-    fontSize: "13px",
+    fontSize: "14px",
     color: "#555",
   },
 
@@ -161,10 +182,39 @@ function AppleIcon() {
 export default function LoginPage() {
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const [formData, setFormData] = useState({ email: "", password: "" });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+    if (error) setError(""); // clear old error as soon as they start correcting it
+  };
+
+  const handleLogin = async (e) => {
     e.preventDefault();
-    // TODO: replace with real authentication call once the backend is wired up
-    navigate("/dashboard");
+    setError("");
+
+    if (!formData.email || !formData.password) {
+      setError("Please enter both your email and password.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const data = await loginUser(formData);
+
+      // Store the session so refreshes and other pages know who's logged in
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+
+      navigate(data.user.role === "admin" ? "/dashboard" : "/dashboard");
+    } catch (err) {
+      // This is where "wrong email/password" and "no account with this email" show up
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -190,39 +240,62 @@ export default function LoginPage() {
               Welcome back! Please enter your details.
             </p>
 
-            <label style={styles.label}>Email address</label>
+            {error && <div style={styles.errorBox}>{error}</div>}
 
-            <input
-              type="email"
-              placeholder="Enter your email"
-              style={styles.input}
-            />
+            <form onSubmit={handleLogin}>
+              <label style={styles.label}>Email address</label>
 
-            <label style={styles.label}>Password</label>
+              <input
+                type="email"
+                name="email"
+                placeholder="Enter your email"
+                value={formData.email}
+                onChange={handleChange}
+                style={{
+                  ...styles.input,
+                  ...(error ? styles.inputError : {}),
+                }}
+              />
 
-            <input
-              type="password"
-              placeholder="Enter your password"
-              style={styles.input}
-            />
+              <label style={styles.label}>Password</label>
 
-            <div style={styles.forgotRow}>
-              <a href="/forgot-password" style={styles.forgotLink}>
-                Forgot password?
-              </a>
-            </div>
+              <input
+                type="password"
+                name="password"
+                placeholder="Enter your password"
+                value={formData.password}
+                onChange={handleChange}
+                style={{
+                  ...styles.input,
+                  ...(error ? styles.inputError : {}),
+                }}
+              />
 
-            <button style={styles.loginBtn} onClick={handleLogin}>
-              Login
-            </button>
+              <div style={styles.forgotRow}>
+                <a href="/forgot-password" style={styles.forgotLink}>
+                  Forgot password?
+                </a>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                style={{
+                  ...styles.loginBtn,
+                  ...(loading ? styles.loginBtnDisabled : {}),
+                }}
+              >
+                {loading ? "Logging in..." : "Login"}
+              </button>
+            </form>
 
             <div style={styles.socialRow}>
-              <button style={styles.socialBtn} onClick={handleLogin}>
+              <button style={styles.socialBtn}>
                 <GoogleIcon />
                 Sign in with Google
               </button>
 
-              <button style={styles.socialBtn} onClick={handleLogin}>
+              <button style={styles.socialBtn}>
                 <AppleIcon />
                 Sign in with Apple
               </button>

@@ -3,6 +3,7 @@ import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import Dashboard from './pages/Dashboard';
+import FlowerDetails from './pages/FlowerDetails';
 
 function App() {
   return (
@@ -13,9 +14,12 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/flower/:id" element={<FlowerDetails />} />
         <Route path="/shop" element={<LoginPage />} />
         <Route path="/build-bouquet" element={<LoginPage />} />
         <Route path="/my-account" element={<LoginPage />} />
+        <Route path="/my-orders" element={<LoginPage />} />
+        <Route path="/wishlist" element={<LoginPage />} />
       </Routes>
     </BrowserRouter>
   );
