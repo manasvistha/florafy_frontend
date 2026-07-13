@@ -122,11 +122,12 @@ export default function Navbar({ variant = 'landing' }) {
   const navigate = useNavigate();
   const navLinks = NAV_LINKS_BY_VARIANT[variant] || NAV_LINKS_BY_VARIANT.landing;
   const isDashboard = variant === 'dashboard';
-  const { count } = useWishlist();
+  const { count, refresh } = useWishlist();
 
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    refresh();
     navigate('/login');
   };
 

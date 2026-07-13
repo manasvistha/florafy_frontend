@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import LoginImage from "../assets/Login.png";
 import { loginUser } from "../services/api";
+import { useWishlist } from "../context/WishlistContext";
 
 const styles = {
   page: {
@@ -16,10 +17,9 @@ const styles = {
   },
 
   card: {
-    width: "100%",
-    maxWidth: "860px",
+    width: "1100px",
     background: "#edd1db",
-    borderRadius: "16px",
+    borderRadius: "20px",
     display: "grid",
     gridTemplateColumns: "1fr 1fr",
     overflow: "hidden",
@@ -27,7 +27,7 @@ const styles = {
   },
 
   imageContainer: {
-    padding: "24px",
+    padding: "40px",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
@@ -36,31 +36,31 @@ const styles = {
 
   image: {
     width: "100%",
-    maxWidth: "360px",
-    height: "420px",
+    maxWidth: "450px",
+    height: "550px",
     objectFit: "cover",
-    borderRadius: "14px",
+    borderRadius: "18px",
     boxShadow: "0 8px 25px rgba(0,0,0,.15)",
   },
 
   form: {
-    padding: "40px 44px",
+    padding: "70px 60px",
     display: "flex",
     flexDirection: "column",
     justifyContent: "center",
   },
 
   heading: {
-    fontSize: "32px",
+    fontSize: "46px",
     fontWeight: "700",
     color: "#1b5e20",
-    marginBottom: "8px",
+    marginBottom: "10px",
   },
 
   subtext: {
-    fontSize: "15px",
+    fontSize: "18px",
     color: "#4e6655",
-    marginBottom: "24px",
+    marginBottom: "20px",
   },
 
   errorBox: {
@@ -82,12 +82,12 @@ const styles = {
 
   input: {
     width: "100%",
-    padding: "11px 14px",
+    padding: "14px 16px",
     borderRadius: "8px",
     border: "1px solid #d9b8c4",
-    fontSize: "14px",
+    fontSize: "15px",
     outline: "none",
-    marginBottom: "16px",
+    marginBottom: "20px",
     boxSizing: "border-box",
   },
 
@@ -98,8 +98,8 @@ const styles = {
   forgotRow: {
     display: "flex",
     justifyContent: "flex-end",
-    marginTop: "-6px",
-    marginBottom: "18px",
+    marginTop: "-10px",
+    marginBottom: "25px",
   },
 
   forgotLink: {
@@ -110,15 +110,15 @@ const styles = {
 
   loginBtn: {
     width: "100%",
-    padding: "12px",
+    padding: "14px",
     background: "#2e5d2f",
     color: "#fff",
     border: "none",
     borderRadius: "8px",
-    fontSize: "14px",
+    fontSize: "15px",
     fontWeight: "600",
     cursor: "pointer",
-    marginBottom: "18px",
+    marginBottom: "25px",
   },
 
   loginBtnDisabled: {
@@ -129,7 +129,7 @@ const styles = {
   socialRow: {
     display: "flex",
     gap: "12px",
-    marginBottom: "20px",
+    marginBottom: "30px",
   },
 
   socialBtn: {
@@ -181,6 +181,7 @@ function AppleIcon() {
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const { refresh } = useWishlist();
 
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
@@ -207,6 +208,7 @@ export default function LoginPage() {
       // Store the session so refreshes and other pages know who's logged in
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
+      refresh();
 
       navigate(data.user.role === "admin" ? "/admin" : "/dashboard");
     } catch (err) {

@@ -156,7 +156,6 @@ const styles = {
 export default function Wishlist() {
   const { ids, remove, clear } = useWishlist();
 
-  // Map stored ids to full products, dropping any that no longer exist.
   const items = ids.map((id) => getProductById(id)).filter(Boolean);
 
   return (
