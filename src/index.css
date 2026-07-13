@@ -9,7 +9,11 @@
 html,
 body {
   width: 100%;
-  overflow-x: hidden;
+  /* `clip` hides horizontal overflow exactly like `hidden` but, unlike `hidden`,
+     it does NOT turn the element into a scroll container — so `position: sticky`
+     descendants (e.g. the Shop filter sidebar) resolve against the viewport and
+     stay pinned correctly while the page scrolls. */
+  overflow-x: clip;
 }
 
 body {

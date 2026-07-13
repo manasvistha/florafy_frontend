@@ -1,8 +1,8 @@
-// Single source of truth for the flower catalogue used by the Dashboard and the
-// Flower Details page. The backend `flowers` module isn't implemented yet, so
-// this mirrors the shape the API is expected to return ({ id, name, price,
-// image, ... }). When the real GET /api/flowers endpoint lands, swap these
-// helpers for API calls and the pages won't need to change.
+// Single source of truth for the flower catalogue used as a FALLBACK when the
+// backend `/api/products` endpoint is empty or unreachable. Shapes mirror the
+// API response ({ id/_id, name, price, image, category, description, stock }),
+// so the pages can consume either source interchangeably (see
+// services/products.js which fetches the API first and falls back to this).
 
 export const PRODUCTS = [
   {
@@ -11,6 +11,7 @@ export const PRODUCTS = [
     price: 850,
     image: '/image/products/rose.jpg',
     category: 'Anniversary',
+    stock: 12,
     description:
       'A timeless classic. Our velvety red roses are hand-picked at dawn and arranged to say everything words can\'t.',
   },
@@ -20,6 +21,7 @@ export const PRODUCTS = [
     price: 60,
     image: '/image/products/tulip.jpg',
     category: 'Birthday',
+    stock: 20,
     description:
       'Bright, cheerful tulips that bring a burst of colour to any room. Perfect for celebrating the little joys.',
   },
@@ -29,6 +31,7 @@ export const PRODUCTS = [
     price: 100,
     image: '/image/products/lily.jpg',
     category: 'Decoration',
+    stock: 8,
     description:
       'Elegant lilies with a gentle fragrance, ideal for adding a touch of grace to your home or a special occasion.',
   },
@@ -38,6 +41,7 @@ export const PRODUCTS = [
     price: 70,
     image: '/image/products/sunflower.jpg',
     category: 'Birthday',
+    stock: 15,
     description:
       'Sunny and warm, these sunflowers are a ray of happiness that keep smiling all week long.',
   },
@@ -47,6 +51,7 @@ export const PRODUCTS = [
     price: 60,
     image: '/image/products/tulip.jpg',
     category: 'Decoration',
+    stock: 20,
     description:
       'A softer blend of tulips to style your space with a fresh, seasonal feel.',
   },
@@ -56,6 +61,7 @@ export const PRODUCTS = [
     price: 90,
     image: '/image/products/mixed.jpg',
     category: 'Anniversary',
+    stock: 10,
     description:
       'A florist-curated mix of seasonal blooms, thoughtfully paired for a bouquet that feels wonderfully complete.',
   },
@@ -65,6 +71,7 @@ export const PRODUCTS = [
     price: 50,
     image: '/image/products/hibiscus.jpg',
     category: 'Decoration',
+    stock: 6,
     description:
       'Vivid hibiscus flowers that add a tropical, exotic accent to any arrangement.',
   },
@@ -74,6 +81,7 @@ export const PRODUCTS = [
     price: 40,
     image: '/image/products/daisy.jpg',
     category: 'Birthday',
+    stock: 25,
     description:
       'Simple, playful daisies — the friendliest way to brighten someone\'s day.',
   },
@@ -83,6 +91,7 @@ export const PRODUCTS = [
     price: 90,
     image: '/image/products/mixed.jpg',
     category: 'Anniversary',
+    stock: 10,
     description:
       'Our signature mixed bunch, balancing bold and delicate blooms for effortless elegance.',
   },
@@ -92,6 +101,7 @@ export const PRODUCTS = [
     price: 120,
     image: '/image/products/lotus.jpg',
     category: 'Decoration',
+    stock: 5,
     description:
       'A serene lotus, symbol of calm and beauty, to bring a peaceful presence to your space.',
   },
@@ -101,6 +111,7 @@ export const PRODUCTS = [
     price: 80,
     image: '/image/products/rose2.jpg',
     category: 'Birthday',
+    stock: 14,
     description:
       'A charming single-stem rose in a softer hue — a sweet gesture for any celebration.',
   },
@@ -110,8 +121,155 @@ export const PRODUCTS = [
     price: 60,
     image: '/image/products/tulip.jpg',
     category: 'Anniversary',
+    stock: 20,
     description:
       'Graceful tulips arranged to mark the moments that matter most.',
+  },
+
+  /* ---------------- Birthday collection (birthday.jpg .. birthday15.jpg) ---------------- */
+  {
+    id: 13,
+    name: 'Birthday Blush',
+    price: 350,
+    image: '/image/products/birthday.jpg',
+    category: 'Birthday',
+    stock: 18,
+    description: 'A soft, pretty bouquet in blush tones to make their birthday feel extra special.',
+  },
+  {
+    id: 14,
+    name: 'Confetti Blooms',
+    price: 420,
+    image: '/image/products/birthday1.jpg',
+    category: 'Birthday',
+    stock: 12,
+    description: 'A playful burst of colourful blooms, as fun and festive as a party popper.',
+  },
+  {
+    id: 15,
+    name: 'Celebration Bouquet',
+    price: 500,
+    image: '/image/products/birthday2.jpg',
+    category: 'Birthday',
+    stock: 9,
+    description: 'A generous mix of bright flowers built for cheering on another wonderful year.',
+  },
+  {
+    id: 16,
+    name: 'Party Petals',
+    price: 300,
+    image: '/image/products/birthday3.jpg',
+    category: 'Birthday',
+    stock: 22,
+    description: 'Cheerful petals in happy hues that bring the party mood to any room.',
+  },
+  {
+    id: 17,
+    name: 'Birthday Sunshine',
+    price: 380,
+    image: '/image/products/birthday4.jpg',
+    category: 'Birthday',
+    stock: 16,
+    description: 'Warm, sunny blooms that wish someone a bright and beautiful day.',
+  },
+  {
+    id: 18,
+    name: 'Sweet Surprise',
+    price: 450,
+    image: '/image/products/birthday5.jpg',
+    category: 'Birthday',
+    stock: 0,
+    description: 'A delightful surprise arrangement, perfect for the sweetest of birthdays.',
+  },
+  {
+    id: 19,
+    name: 'Joyful Jubilee',
+    price: 540,
+    image: '/image/products/birthday6.jpg',
+    category: 'Birthday',
+    stock: 7,
+    description: 'A jubilant bouquet overflowing with joy for a milestone celebration.',
+  },
+  {
+    id: 20,
+    name: 'Festive Fuchsia',
+    price: 330,
+    image: '/image/products/birthday7.jpg',
+    category: 'Birthday',
+    stock: 19,
+    description: 'Bold fuchsia blooms that make a vibrant, unforgettable birthday statement.',
+  },
+  {
+    id: 21,
+    name: 'Birthday Bloom Box',
+    price: 600,
+    image: '/image/products/birthday8.jpg',
+    category: 'Birthday',
+    stock: 5,
+    description: 'A luxe box of hand-tied blooms — a birthday gift that truly wows.',
+  },
+  {
+    id: 22,
+    name: 'Cheerful Charm',
+    price: 290,
+    image: '/image/products/birthday9.jpg',
+    category: 'Birthday',
+    stock: 24,
+    description: 'A charming little bunch to add a cheerful sparkle to their special day.',
+  },
+  {
+    id: 23,
+    name: 'Wish Bouquet',
+    price: 410,
+    image: '/image/products/birthday10.jpg',
+    category: 'Birthday',
+    stock: 11,
+    description: 'Make a wish! A dreamy bouquet crafted for birthday wishes come true.',
+  },
+  {
+    id: 24,
+    name: 'Rosy Celebration',
+    price: 470,
+    image: '/image/products/birthday11.jpg',
+    category: 'Birthday',
+    stock: 8,
+    description: 'Romantic roses arranged to celebrate someone you adore turning a year older.',
+  },
+  {
+    id: 25,
+    name: 'Birthday Bright',
+    price: 360,
+    image: '/image/products/birthday12.jpg',
+    category: 'Birthday',
+    stock: 0,
+    description: 'A bright, bold bouquet that lights up the moment they open the door.',
+  },
+  {
+    id: 26,
+    name: 'Pink Fiesta',
+    price: 400,
+    image: '/image/products/birthday13.jpg',
+    category: 'Birthday',
+    stock: 13,
+    description: 'A fiesta of pink blossoms bursting with birthday energy and fun.',
+  },
+  {
+    id: 27,
+    name: 'Golden Wishes',
+    price: 520,
+    image: '/image/products/birthday14.jpg',
+    category: 'Birthday',
+    stock: 6,
+    description: 'Golden-toned blooms to send warm, glowing wishes on a golden birthday.',
+  },
+  {
+    id: 28,
+    name: 'Birthday Blossoms',
+    price: 340,
+    image: '/image/products/birthday15.jpg',
+    category: 'Birthday',
+    stock: 17,
+    description: 'A fresh gathering of seasonal blossoms to make their birthday bloom.',
   },
 ];
 

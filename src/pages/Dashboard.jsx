@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Heart, Plus } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import { PRODUCTS } from '../data/products';
@@ -141,6 +141,14 @@ const styles = {
 export default function Dashboard() {
   const [activeCategory, setActiveCategory] = useState('All Flowers');
   const { isWished, toggle } = useWishlist();
+  const navigate = useNavigate();
+
+  // Clicking a category takes the shopper to the full listing filtered to it
+  // (e.g. Birthday -> /shop?category=Birthday). "All Flowers" shows everything.
+  const goToCategory = (cat) => {
+    setActiveCategory(cat);
+    navigate(cat === 'All Flowers' ? '/shop' : `/shop?category=${encodeURIComponent(cat)}`);
+  };
 
   return (
     <div style={styles.page}>
@@ -151,7 +159,7 @@ export default function Dashboard() {
           {CATEGORIES.map((cat) => (
             <button
               key={cat}
-              onClick={() => setActiveCategory(cat)}
+              onClick={() => goToCategory(cat)}
               style={{
                 ...styles.pill,
                 ...(activeCategory === cat ? styles.pillActive : {}),
@@ -165,7 +173,7 @@ export default function Dashboard() {
         <div style={styles.headerRow}>
           <h2 style={styles.title}>Most Loved Bouquets</h2>
           <p style={styles.subtitle}>Handpicked by our florists, loved by thousands</p>
-          <a href="/shop" style={styles.viewAll}>VIEW ALL</a>
+          <Link to="/shop" style={styles.viewAll}>VIEW ALL</Link>
         </div>
 
         <div style={styles.grid}>

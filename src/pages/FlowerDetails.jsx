@@ -1,8 +1,17 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Heart, ShoppingBag, Minus, Plus, ArrowLeft, Truck, Leaf } from 'lucide-react';
+import {
+  Heart,
+  ShoppingBag,
+  Minus,
+  Plus,
+  ArrowLeft,
+  Truck,
+  Leaf,
+  CreditCard,
+} from 'lucide-react';
 import Navbar from '../components/Navbar';
-import { getProductById } from '../data/products';
+import { fetchProductById } from '../services/products';
 import { useWishlist } from '../context/WishlistContext';
 
 const styles = {
@@ -157,6 +166,35 @@ const styles = {
     color: '#fff',
     borderColor: '#5c2436',
   },
+  buyBtn: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 10,
+    background: '#8a3a4d',
+    color: '#fff',
+    border: 'none',
+    borderRadius: 999,
+    padding: '14px 30px',
+    fontSize: 14,
+    fontWeight: 600,
+    cursor: 'pointer',
+  },
+  btnDisabled: {
+    opacity: 0.5,
+    cursor: 'not-allowed',
+  },
+  stockIn: {
+    fontSize: 14,
+    fontWeight: 600,
+    color: '#2f8a4d',
+    margin: '0 0 22px',
+  },
+  stockOut: {
+    fontSize: 14,
+    fontWeight: 600,
+    color: '#c0392b',
+    margin: '0 0 22px',
+  },
   perks: {
     display: 'flex',
     flexDirection: 'column',
@@ -198,11 +236,40 @@ const styles = {
 export default function FlowerDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const product = getProductById(id);
 
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const { isWished, toggle } = useWishlist();
+
+  // Fetch the flower from the backend API (with local fallback) by id.
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+    fetchProductById(id)
+      .then((p) => {
+        if (active) setProduct(p);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [id]);
+
   const wished = product ? isWished(product.id) : false;
+
+  if (loading) {
+    return (
+      <div style={styles.page}>
+        <Navbar variant="dashboard" />
+        <div style={styles.notFound}>
+          <p style={{ color: '#8a3a4d' }}>Loading…</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!product) {
     return (
@@ -221,8 +288,12 @@ export default function FlowerDetails() {
     );
   }
 
+  const hasStockInfo = product.stock !== null && product.stock !== undefined;
+  const outOfStock = hasStockInfo && product.stock <= 0;
+
   const decrease = () => setQuantity((q) => Math.max(1, q - 1));
-  const increase = () => setQuantity((q) => q + 1);
+  const increase = () =>
+    setQuantity((q) => (hasStockInfo ? Math.min(product.stock, q + 1) : q + 1));
 
   return (
     <div style={styles.page}>
@@ -245,6 +316,11 @@ export default function FlowerDetails() {
             {product.category && <span style={styles.category}>{product.category}</span>}
             <h1 style={styles.name}>{product.name}</h1>
             <p style={styles.price}>Rs. {product.price}</p>
+            {hasStockInfo && (
+              <p style={outOfStock ? styles.stockOut : styles.stockIn}>
+                {outOfStock ? 'Out of stock' : `In stock — ${product.stock} available`}
+              </p>
+            )}
             {product.description && <p style={styles.description}>{product.description}</p>}
 
             <div style={styles.qtyRow}>
@@ -260,9 +336,19 @@ export default function FlowerDetails() {
               </div>
             </div>
 
-            <div style={styles.actions}>
-              <button style={styles.addBtn}>
+            <div style={{ ...styles.actions, flexWrap: 'wrap' }}>
+              <button
+                style={{ ...styles.addBtn, ...(outOfStock ? styles.btnDisabled : {}) }}
+                disabled={outOfStock}
+              >
                 <ShoppingBag size={16} /> Add to Cart · Rs. {product.price * quantity}
+              </button>
+              <button
+                style={{ ...styles.buyBtn, ...(outOfStock ? styles.btnDisabled : {}) }}
+                disabled={outOfStock}
+                onClick={() => !outOfStock && navigate('/shop')}
+              >
+                <CreditCard size={16} /> Buy Now
               </button>
               <button
                 onClick={() => toggle(product.id)}

@@ -1,8 +1,8 @@
-import { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useMemo, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Heart, Plus, CalendarDays, Wallet, Truck } from 'lucide-react';
 import Navbar from '../components/Navbar';
-import { PRODUCTS } from '../data/products';
+import { fetchProducts } from '../services/products';
 import { useWishlist } from '../context/WishlistContext';
 
 const CATEGORIES = ['All Flowers', 'Birthday', 'Anniversary', 'Decoration'];
@@ -39,6 +39,13 @@ const styles = {
     padding: '26px 22px',
     position: 'sticky',
     top: 24,
+    // Pin to the top of its grid area so it stays put while products scroll.
+    alignSelf: 'start',
+    // Cap the sidebar to the viewport (24px gap top + bottom) and let it scroll
+    // on its own when the filters are taller than the screen — so every filter
+    // stays reachable without scrolling the product list.
+    maxHeight: 'calc(100vh - 48px)',
+    overflowY: 'auto',
   },
   sidebarHead: {
     display: 'flex',
@@ -205,6 +212,20 @@ const styles = {
     gridTemplateColumns: 'repeat(4, 1fr)',
     gap: 20,
   },
+  // ---- Responsive overrides (applied only on narrow screens) ----
+  layoutNarrow: {
+    gridTemplateColumns: '1fr',
+    gap: 24,
+  },
+  sidebarStatic: {
+    position: 'static',
+    top: 'auto',
+    maxHeight: 'none',
+    overflowY: 'visible',
+  },
+  gridNarrow: {
+    gridTemplateColumns: 'repeat(2, 1fr)',
+  },
   card: {
     background: '#fff',
     borderRadius: 14,
@@ -244,16 +265,47 @@ const styles = {
     padding: '10px 12px 14px',
     position: 'relative',
   },
+  cardCat: {
+    fontSize: 10,
+    fontWeight: 700,
+    letterSpacing: 0.6,
+    textTransform: 'uppercase',
+    color: '#8a3a4d',
+    margin: '0 0 3px',
+  },
   name: {
     fontSize: 13,
     fontWeight: 600,
     color: '#2a2420',
     margin: '0 0 2px',
   },
+  desc: {
+    fontSize: 11,
+    color: '#9a8f92',
+    lineHeight: 1.4,
+    margin: '0 0 6px',
+    paddingRight: 28,
+    display: '-webkit-box',
+    WebkitLineClamp: 2,
+    WebkitBoxOrient: 'vertical',
+    overflow: 'hidden',
+  },
   price: {
     fontSize: 12,
     color: '#8a8a8a',
     margin: 0,
+  },
+  stockIn: {
+    fontSize: 11,
+    fontWeight: 600,
+    color: '#2f8a4d',
+    margin: '4px 0 0',
+  },
+  stockOut: {
+    fontSize: 11,
+    fontWeight: 600,
+    color: '#c0392b',
+    margin: '4px 0 0',
   },
   addBtn: {
     position: 'absolute',
@@ -280,37 +332,88 @@ const styles = {
 
 const DEFAULT_FILTERS = { occasion: '', maxPrice: PRICE_MAX, delivery: 'express' };
 
+// Tracks whether the viewport is narrow (tablet/mobile) so the two-column layout
+// can stack and the sidebar can stop being sticky. Kept in JS because the page
+// uses inline styles (no CSS media queries).
+function useIsNarrow(breakpoint = 768) {
+  const [narrow, setNarrow] = useState(
+    typeof window !== 'undefined' ? window.innerWidth <= breakpoint : false
+  );
+  useEffect(() => {
+    const onResize = () => setNarrow(window.innerWidth <= breakpoint);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, [breakpoint]);
+  return narrow;
+}
+
 export default function Shop() {
-  const [activeCategory, setActiveCategory] = useState('All Flowers');
+  const isNarrow = useIsNarrow();
+  const [searchParams, setSearchParams] = useSearchParams();
+  // Preselect a category from the URL (e.g. /shop?category=Birthday).
+  const initialCategory = searchParams.get('category') || 'All Flowers';
+
+  const [activeCategory, setActiveCategory] = useState(initialCategory);
   const { isWished, toggle } = useWishlist();
+
+  // Products come from the backend API (with a local fallback) — see
+  // services/products.js.
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   // Draft = what's shown in the sidebar; applied = what actually filters the grid.
   const [draft, setDraft] = useState(DEFAULT_FILTERS);
   const [applied, setApplied] = useState(DEFAULT_FILTERS);
 
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+    fetchProducts()
+      .then((list) => {
+        if (active) setProducts(list);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  // Keep the URL in sync so a category view is shareable/bookmarkable.
+  const selectCategory = (cat) => {
+    setActiveCategory(cat);
+    if (cat === 'All Flowers') {
+      searchParams.delete('category');
+    } else {
+      searchParams.set('category', cat);
+    }
+    setSearchParams(searchParams, { replace: true });
+  };
+
   const applyFilters = () => setApplied(draft);
   const clearAll = () => {
     setDraft(DEFAULT_FILTERS);
     setApplied(DEFAULT_FILTERS);
-    setActiveCategory('All Flowers');
+    selectCategory('All Flowers');
   };
 
   const visibleProducts = useMemo(() => {
-    return PRODUCTS.filter((p) => {
+    return products.filter((p) => {
       const byCategory = activeCategory === 'All Flowers' || p.category === activeCategory;
       const byOccasion = !applied.occasion || p.category === applied.occasion;
       const byPrice = p.price <= applied.maxPrice;
       return byCategory && byOccasion && byPrice;
     });
-  }, [activeCategory, applied]);
+  }, [products, activeCategory, applied]);
 
   return (
     <div style={styles.page}>
       <Navbar variant="dashboard" />
 
-      <div style={styles.layout}>
+      <div style={{ ...styles.layout, ...(isNarrow ? styles.layoutNarrow : {}) }}>
         {/* -------- Filters sidebar -------- */}
-        <aside style={styles.sidebar}>
+        <aside style={{ ...styles.sidebar, ...(isNarrow ? styles.sidebarStatic : {}) }}>
           <div style={styles.sidebarHead}>
             <h2 style={styles.sidebarTitle}>Filters</h2>
             <button style={styles.clearAll} onClick={clearAll}>
@@ -411,13 +514,15 @@ export default function Shop() {
 
         {/* -------- Main content -------- */}
         <main style={styles.main}>
-          <h1 style={styles.title}>All Bouquets</h1>
+          <h1 style={styles.title}>
+            {activeCategory === 'All Flowers' ? 'All Bouquets' : `${activeCategory} Bouquets`}
+          </h1>
 
           <div style={styles.pillRow}>
             {CATEGORIES.map((cat) => (
               <button
                 key={cat}
-                onClick={() => setActiveCategory(cat)}
+                onClick={() => selectCategory(cat)}
                 style={{
                   ...styles.pill,
                   ...(activeCategory === cat ? styles.pillActive : {}),
@@ -428,8 +533,9 @@ export default function Shop() {
             ))}
           </div>
 
-          <div style={styles.grid}>
-            {visibleProducts.length === 0 && (
+          <div style={{ ...styles.grid, ...(isNarrow ? styles.gridNarrow : {}) }}>
+            {loading && <p style={styles.empty}>Loading bouquets…</p>}
+            {!loading && visibleProducts.length === 0 && (
               <p style={styles.empty}>No bouquets match your filters.</p>
             )}
             {visibleProducts.map((product, index) => (
@@ -456,8 +562,15 @@ export default function Shop() {
                   </button>
                 </div>
                 <div style={styles.info}>
+                  <p style={styles.cardCat}>{product.category}</p>
                   <p style={styles.name}>{product.name}</p>
+                  {product.description && <p style={styles.desc}>{product.description}</p>}
                   <p style={styles.price}>Rs. {product.price}</p>
+                  {product.stock !== null && product.stock !== undefined && (
+                    <p style={product.stock > 0 ? styles.stockIn : styles.stockOut}>
+                      {product.stock > 0 ? `In stock (${product.stock})` : 'Out of stock'}
+                    </p>
+                  )}
                   <button
                     style={styles.addBtn}
                     aria-label="Add to cart"
