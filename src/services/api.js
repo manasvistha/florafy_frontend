@@ -1,8 +1,12 @@
 const API_BASE_URL = 'http://localhost:5000/api';
 
+function getToken() {
+  return localStorage.getItem('token');
+}
+
 async function request(path, options = {}) {
   const res = await fetch(`${API_BASE_URL}${path}`, {
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
     ...options,
   });
 
@@ -16,6 +20,20 @@ async function request(path, options = {}) {
   return data;
 }
 
+// Same as request(), but attaches the logged-in user's JWT for protected routes.
+function authRequest(path, options = {}) {
+  const token = getToken();
+  return request(path, {
+    ...options,
+    headers: {
+      ...(options.headers || {}),
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+  });
+}
+
+/* ---------------- Auth ---------------- */
+
 export function loginUser({ email, password }) {
   return request('/auth/login', {
     method: 'POST',
@@ -28,4 +46,82 @@ export function registerUser({ name, email, password }) {
     method: 'POST',
     body: JSON.stringify({ name, email, password }),
   });
+}
+
+/* ---------------- Users (admin) ---------------- */
+
+export function getUsers() {
+  return authRequest('/users').then((d) => d.users);
+}
+
+export function updateUser(id, payload) {
+  return authRequest(`/users/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(payload),
+  }).then((d) => d.user);
+}
+
+export function deleteUser(id) {
+  return authRequest(`/users/${id}`, { method: 'DELETE' });
+}
+
+/* ---------------- Products ---------------- */
+
+export function getProducts(params = {}) {
+  const qs = new URLSearchParams(params).toString();
+  return request(`/products${qs ? `?${qs}` : ''}`).then((d) => d.products);
+}
+
+export function getProduct(id) {
+  return request(`/products/${id}`).then((d) => d.product);
+}
+
+export function createProduct(payload) {
+  return authRequest('/products', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  }).then((d) => d.product);
+}
+
+export function updateProduct(id, payload) {
+  return authRequest(`/products/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(payload),
+  }).then((d) => d.product);
+}
+
+export function deleteProduct(id) {
+  return authRequest(`/products/${id}`, { method: 'DELETE' });
+}
+
+/* ---------------- Orders ---------------- */
+
+// Admin: all orders, optional { status, search }
+export function getOrders(params = {}) {
+  const clean = Object.fromEntries(Object.entries(params).filter(([, v]) => v));
+  const qs = new URLSearchParams(clean).toString();
+  return authRequest(`/orders${qs ? `?${qs}` : ''}`).then((d) => d.orders);
+}
+
+export function getOrder(id) {
+  return authRequest(`/orders/${id}`).then((d) => d.order);
+}
+
+export function updateOrderStatus(id, status) {
+  return authRequest(`/orders/${id}/status`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status }),
+  }).then((d) => d.order);
+}
+
+// Regular user: place an order / view own history
+export function createOrder(payload) {
+  return authRequest('/orders', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  }).then((d) => d.order);
+}
+
+export function getMyOrders() {
+  return authRequest('/orders/my').then((d) => d.orders);
 }

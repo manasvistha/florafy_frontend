@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { WishlistProvider } from './context/WishlistContext';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
@@ -7,6 +7,10 @@ import Dashboard from './pages/Dashboard';
 import FlowerDetails from './pages/FlowerDetails';
 import Shop from './pages/Shop';
 import Wishlist from './pages/Wishlist';
+import RequireAdmin from './components/RequireAdmin';
+import AdminUsers from './pages/admin/AdminUsers';
+import AdminProducts from './pages/admin/AdminProducts';
+import AdminOrders from './pages/admin/AdminOrders';
 
 function App() {
   return (
@@ -24,6 +28,33 @@ function App() {
           <Route path="/build-bouquet" element={<LoginPage />} />
           <Route path="/my-account" element={<LoginPage />} />
           <Route path="/my-orders" element={<LoginPage />} />
+
+          {/* ---- Admin (role: admin only) ---- */}
+          <Route path="/admin" element={<Navigate to="/admin/users" replace />} />
+          <Route
+            path="/admin/users"
+            element={
+              <RequireAdmin>
+                <AdminUsers />
+              </RequireAdmin>
+            }
+          />
+          <Route
+            path="/admin/products"
+            element={
+              <RequireAdmin>
+                <AdminProducts />
+              </RequireAdmin>
+            }
+          />
+          <Route
+            path="/admin/orders"
+            element={
+              <RequireAdmin>
+                <AdminOrders />
+              </RequireAdmin>
+            }
+          />
         </Routes>
       </BrowserRouter>
     </WishlistProvider>

@@ -208,7 +208,7 @@ export default function LoginPage() {
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
 
-      navigate(data.user.role === "admin" ? "/dashboard" : "/dashboard");
+      navigate(data.user.role === "admin" ? "/admin" : "/dashboard");
     } catch (err) {
       // This is where "wrong email/password" and "no account with this email" show up
       setError(err.message);
