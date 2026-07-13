@@ -7,6 +7,10 @@ import Dashboard from './pages/Dashboard';
 import FlowerDetails from './pages/FlowerDetails';
 import Shop from './pages/Shop';
 import Wishlist from './pages/Wishlist';
+import BuildBouquet from './pages/BuildBouquet';
+import MyOrders from './pages/MyOrders';
+import MyAccount from './pages/MyAccount';
+import RequireAuth from './components/RequireAuth';
 import RequireAdmin from './components/RequireAdmin';
 import AdminUsers from './pages/admin/AdminUsers';
 import AdminProducts from './pages/admin/AdminProducts';
@@ -21,13 +25,64 @@ function App() {
           <Route path="/home" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/flower/:id" element={<FlowerDetails />} />
-          <Route path="/shop" element={<Shop />} />
-          <Route path="/wishlist" element={<Wishlist />} />
-          <Route path="/build-bouquet" element={<LoginPage />} />
-          <Route path="/my-account" element={<LoginPage />} />
-          <Route path="/my-orders" element={<LoginPage />} />
+
+          {/* ---- Logged-in users only ---- */}
+          <Route
+            path="/dashboard"
+            element={
+              <RequireAuth>
+                <Dashboard />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/shop"
+            element={
+              <RequireAuth>
+                <Shop />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/flower/:id"
+            element={
+              <RequireAuth>
+                <FlowerDetails />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/wishlist"
+            element={
+              <RequireAuth>
+                <Wishlist />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/build-bouquet"
+            element={
+              <RequireAuth>
+                <BuildBouquet />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/my-orders"
+            element={
+              <RequireAuth>
+                <MyOrders />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/my-account"
+            element={
+              <RequireAuth>
+                <MyAccount />
+              </RequireAuth>
+            }
+          />
 
           {/* ---- Admin (role: admin only) ---- */}
           <Route path="/admin" element={<Navigate to="/admin/users" replace />} />

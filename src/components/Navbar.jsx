@@ -9,9 +9,8 @@ const NAV_LINKS_BY_VARIANT = {
     { label: 'Build Bouquet', to: '/build-bouquet' },
     { label: 'My Account', to: '/my-account' },
   ],
-  // Dashboard is for logged-in users, so it drops the landing-style links
-  // (Home, etc.) in favour of shopping/account-oriented navigation.
   dashboard: [
+    { label: 'Home', to: '/dashboard' },
     { label: 'Shop', to: '/shop' },
     { label: 'Build Bouquet', to: '/build-bouquet' },
     { label: 'My Orders', to: '/my-orders' },
