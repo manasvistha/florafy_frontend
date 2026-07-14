@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { Heart, ShoppingBag, Search, User, LogOut } from 'lucide-react';
 import { useWishlist } from '../context/WishlistContext';
 
@@ -124,7 +124,27 @@ export default function Navbar({ variant = 'landing' }) {
   const navLinks = NAV_LINKS_BY_VARIANT[variant] || NAV_LINKS_BY_VARIANT.landing;
   const isDashboard = variant === 'dashboard';
   const { count, refresh } = useWishlist();
+  const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState('');
+
+  // Keep the search box showing whatever's in the URL (e.g. after navigating
+  // straight to a /shop?search=... link, or after it's cleared elsewhere).
+  useEffect(() => {
+    setSearchTerm(searchParams.get('search') || '');
+  }, [searchParams]);
+
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+
+    // If we're already on the Shop page and the box is cleared, clear the
+    // results immediately — no need to press Enter or click anything.
+    if (value === '' && location.pathname === '/shop') {
+      searchParams.delete('search');
+      setSearchParams(searchParams, { replace: true });
+    }
+  };
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -164,7 +184,7 @@ export default function Navbar({ variant = 'landing' }) {
               aria-label="Search for blooms"
               style={styles.searchInput}
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={handleSearchChange}
             />
           </form>
           <Link to="/wishlist" style={styles.iconBtn} aria-label="Wishlist">
