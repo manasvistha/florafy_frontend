@@ -24,17 +24,18 @@ const styles = {
     marginBottom: 40,
   },
   pill: {
-    padding: '10px 22px',
+    padding: '11px 24px',
     borderRadius: 999,
-    border: 'none',
-    fontSize: 13,
+    border: '1.5px solid #e9bccb',
+    fontSize: 14,
     fontWeight: 600,
     cursor: 'pointer',
-    background: '#e9bccb',
-    color: '#2a2420',
+    background: '#fff',
+    color: '#5c2436',
   },
   pillActive: {
     background: '#5c2436',
+    borderColor: '#5c2436',
     color: '#fff',
   },
   headerRow: {
@@ -69,7 +70,7 @@ const styles = {
   },
   grid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(5, 1fr)',
+    gridTemplateColumns: 'repeat(4, 1fr)',
     gap: 20,
   },
   card: {

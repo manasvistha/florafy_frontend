@@ -33,8 +33,13 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: 32,
     fontFamily: "'Poppins', sans-serif",
+  },
+  leftGroup: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 40,
+    flexShrink: 0,
   },
   logo: {
     display: 'flex',
@@ -49,18 +54,20 @@ const styles = {
   links: {
     display: 'flex',
     alignItems: 'center',
-    gap: 40,
+    gap: 28,
   },
   link: {
     fontSize: 16,
     fontWeight: 400,
     color: '#4a4a4a',
     textDecoration: 'none',
+    whiteSpace: 'nowrap',
   },
   actions: {
     display: 'flex',
     alignItems: 'center',
-    gap: 16,
+    gap: 12,
+    flexShrink: 0,
   },
   search: {
     display: 'flex',
@@ -68,8 +75,8 @@ const styles = {
     gap: 8,
     background: '#f0d9e3',
     borderRadius: 999,
-    padding: '10px 18px',
-    minWidth: 220,
+    padding: '10px 16px',
+    minWidth: 170,
   },
   searchInput: {
     border: 'none',
@@ -168,17 +175,20 @@ export default function Navbar({ variant = 'landing' }) {
   return (
     <header style={styles.navbar}>
       <div style={styles.inner}>
-        <Link to={isDashboard ? '/dashboard' : '/'} style={styles.logo}>
-          <img src="/image/florafy-logo.png" alt="Florafy" style={styles.logoImg} />
-        </Link>
+        <div style={styles.leftGroup}>
+          <Link to={isDashboard ? '/dashboard' : '/'} style={styles.logo}>
+            <img src="/image/florafy-logo.png" alt="Florafy" style={styles.logoImg} />
+          </Link>
 
-        <nav style={styles.links} aria-label="Main navigation">
-          {navLinks.map(({ label, to }) => (
-            <Link key={label} to={to} style={styles.link}>
-              {label}
-            </Link>
-          ))}
-        </nav>
+          <nav style={styles.links} aria-label="Main navigation">
+            {navLinks.map(({ label, to }) => (
+              <Link key={label} to={to} style={styles.link}>
+                {label}
+              </Link>
+            ))}
+          </nav>
+        </div>
+
 
         <div style={styles.actions}>
           <form style={styles.search} onSubmit={handleSearch}>
