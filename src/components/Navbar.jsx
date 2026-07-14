@@ -138,10 +138,15 @@ export default function Navbar({ variant = 'landing' }) {
     const value = e.target.value;
     setSearchTerm(value);
 
-    // If we're already on the Shop page and the box is cleared, clear the
-    // results immediately — no need to press Enter or click anything.
-    if (value === '' && location.pathname === '/shop') {
-      searchParams.delete('search');
+    // While already on the Shop page, filter results live as you type —
+    // no need to press Enter. Only Enter is needed to *get to* the Shop
+    // page in the first place from somewhere else.
+    if (location.pathname === '/shop') {
+      if (value) {
+        searchParams.set('search', value);
+      } else {
+        searchParams.delete('search');
+      }
       setSearchParams(searchParams, { replace: true });
     }
   };
