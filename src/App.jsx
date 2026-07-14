@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { WishlistProvider } from './context/WishlistContext';
+import { CartProvider } from './context/CartContext';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
@@ -8,6 +9,7 @@ import FlowerDetails from './pages/FlowerDetails';
 import Shop from './pages/Shop';
 import Wishlist from './pages/Wishlist';
 import BuildBouquet from './pages/BuildBouquet';
+import Checkout from './pages/Checkout';
 import MyOrders from './pages/MyOrders';
 import MyAccount from './pages/MyAccount';
 import RequireAuth from './components/RequireAuth';
@@ -19,6 +21,7 @@ import AdminOrders from './pages/admin/AdminOrders';
 function App() {
   return (
     <WishlistProvider>
+      <CartProvider>
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<LandingPage />} />
@@ -68,6 +71,14 @@ function App() {
             }
           />
           <Route
+            path="/checkout"
+            element={
+              <RequireAuth>
+                <Checkout />
+              </RequireAuth>
+            }
+          />
+          <Route
             path="/my-orders"
             element={
               <RequireAuth>
@@ -112,6 +123,7 @@ function App() {
           />
         </Routes>
       </BrowserRouter>
+      </CartProvider>
     </WishlistProvider>
   );
 }

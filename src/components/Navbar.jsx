@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { Heart, ShoppingBag, Search, User, LogOut } from 'lucide-react';
 import { useWishlist } from '../context/WishlistContext';
+import { useCart } from '../context/CartContext';
 
 const NAV_LINKS_BY_VARIANT = {
   landing: [
@@ -131,6 +132,7 @@ export default function Navbar({ variant = 'landing' }) {
   const navLinks = NAV_LINKS_BY_VARIANT[variant] || NAV_LINKS_BY_VARIANT.landing;
   const isDashboard = variant === 'dashboard';
   const { count, refresh } = useWishlist();
+  const { count: cartCount } = useCart();
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState('');
@@ -206,9 +208,10 @@ export default function Navbar({ variant = 'landing' }) {
             <Heart size={20} />
             {count > 0 && <span style={styles.badge}>{count}</span>}
           </Link>
-          <button style={styles.iconBtn} aria-label="Cart">
+          <Link to="/checkout" style={styles.iconBtn} aria-label="Cart">
             <ShoppingBag size={20} />
-          </button>
+            {cartCount > 0 && <span style={styles.badge}>{cartCount}</span>}
+          </Link>
 
           {isDashboard ? (
             <button style={styles.logoutBtn} onClick={handleLogout} aria-label="Log out">
