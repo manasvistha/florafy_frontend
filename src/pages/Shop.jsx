@@ -42,6 +42,8 @@ const styles = {
     alignSelf: 'start',
     maxHeight: 'calc(100vh - 48px)',
     overflowY: 'auto',
+    scrollbarWidth: 'thin', // Firefox
+    scrollbarColor: '#c96f86 transparent', // Firefox: thumb, track
   },
   sidebarHead: {
     display: 'flex',
@@ -428,11 +430,29 @@ export default function Shop() {
 
   return (
     <div style={styles.page}>
+      <style>{`
+        .shop-sidebar::-webkit-scrollbar {
+          width: 6px;
+        }
+        .shop-sidebar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .shop-sidebar::-webkit-scrollbar-thumb {
+          background: #c96f86;
+          border-radius: 999px;
+        }
+        .shop-sidebar::-webkit-scrollbar-thumb:hover {
+          background: #a85a6d;
+        }
+      `}</style>
       <Navbar variant="dashboard" />
 
       <div style={{ ...styles.layout, ...(isNarrow ? styles.layoutNarrow : {}) }}>
         {/* -------- Filters sidebar -------- */}
-        <aside style={{ ...styles.sidebar, ...(isNarrow ? styles.sidebarStatic : {}) }}>
+        <aside
+          className="shop-sidebar"
+          style={{ ...styles.sidebar, ...(isNarrow ? styles.sidebarStatic : {}) }}
+        >
           <div style={styles.sidebarHead}>
             <h2 style={styles.sidebarTitle}>Filters</h2>
             <button style={styles.clearAll} onClick={clearAll}>
@@ -541,9 +561,6 @@ export default function Shop() {
             <div style={styles.searchBanner}>
               <Search size={14} />
               Showing results for "{searchQuery}"
-              <button style={styles.clearSearch} onClick={clearSearch}>
-                Clear search
-              </button>
             </div>
           )}
 
