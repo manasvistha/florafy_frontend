@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Heart, Plus } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import { PRODUCTS } from '../data/products';
@@ -136,19 +136,24 @@ const styles = {
     justifyContent: 'center',
     cursor: 'pointer',
   },
+  empty: {
+    gridColumn: '1 / -1',
+    textAlign: 'center',
+    color: '#8a3a4d',
+    padding: '40px 0',
+    fontSize: 14,
+  },
 };
 
 export default function Dashboard() {
   const [activeCategory, setActiveCategory] = useState('All Flowers');
   const { isWished, toggle } = useWishlist();
-  const navigate = useNavigate();
 
-  // Clicking a category takes the shopper to the full listing filtered to it
-  // (e.g. Birthday -> /shop?category=Birthday). "All Flowers" shows everything.
-  const goToCategory = (cat) => {
-    setActiveCategory(cat);
-    navigate(cat === 'All Flowers' ? '/shop' : `/shop?category=${encodeURIComponent(cat)}`);
-  };
+  // Filters the grid in place — clicking a pill never navigates anywhere.
+  const visibleProducts = useMemo(() => {
+    if (activeCategory === 'All Flowers') return PRODUCTS;
+    return PRODUCTS.filter((p) => p.category === activeCategory);
+  }, [activeCategory]);
 
   return (
     <div style={styles.page}>
@@ -159,7 +164,7 @@ export default function Dashboard() {
           {CATEGORIES.map((cat) => (
             <button
               key={cat}
-              onClick={() => goToCategory(cat)}
+              onClick={() => setActiveCategory(cat)}
               style={{
                 ...styles.pill,
                 ...(activeCategory === cat ? styles.pillActive : {}),
@@ -177,7 +182,10 @@ export default function Dashboard() {
         </div>
 
         <div style={styles.grid}>
-          {PRODUCTS.map((product, index) => (
+          {visibleProducts.length === 0 && (
+            <p style={styles.empty}>No bouquets in this category yet.</p>
+          )}
+          {visibleProducts.map((product, index) => (
             <Link
               to={`/flower/${product.id}`}
               style={styles.card}

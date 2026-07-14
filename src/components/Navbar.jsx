@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Heart, ShoppingBag, Search, User, LogOut } from 'lucide-react';
 import { useWishlist } from '../context/WishlistContext';
@@ -123,12 +124,20 @@ export default function Navbar({ variant = 'landing' }) {
   const navLinks = NAV_LINKS_BY_VARIANT[variant] || NAV_LINKS_BY_VARIANT.landing;
   const isDashboard = variant === 'dashboard';
   const { count, refresh } = useWishlist();
+  const [searchTerm, setSearchTerm] = useState('');
 
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     refresh();
     navigate('/login');
+  };
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    const trimmed = searchTerm.trim();
+    if (!trimmed) return;
+    navigate(`/shop?search=${encodeURIComponent(trimmed)}`);
   };
 
   return (
@@ -147,15 +156,17 @@ export default function Navbar({ variant = 'landing' }) {
         </nav>
 
         <div style={styles.actions}>
-          <div style={styles.search}>
+          <form style={styles.search} onSubmit={handleSearch}>
             <Search size={16} color="#5c534d" />
             <input
               type="text"
               placeholder="Search for blooms..."
               aria-label="Search for blooms"
               style={styles.searchInput}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
             />
-          </div>
+          </form>
           <Link to="/wishlist" style={styles.iconBtn} aria-label="Wishlist">
             <Heart size={20} />
             {count > 0 && <span style={styles.badge}>{count}</span>}

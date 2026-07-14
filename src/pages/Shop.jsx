@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Heart, Plus, CalendarDays, Wallet, Truck } from 'lucide-react';
+import { Heart, Plus, CalendarDays, Wallet, Truck, Search } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import { fetchProducts } from '../services/products';
 import { useWishlist } from '../context/WishlistContext';
@@ -39,11 +39,7 @@ const styles = {
     padding: '26px 22px',
     position: 'sticky',
     top: 24,
-    // Pin to the top of its grid area so it stays put while products scroll.
     alignSelf: 'start',
-    // Cap the sidebar to the viewport (24px gap top + bottom) and let it scroll
-    // on its own when the filters are taller than the screen — so every filter
-    // stays reachable without scrolling the product list.
     maxHeight: 'calc(100vh - 48px)',
     overflowY: 'auto',
   },
@@ -185,7 +181,24 @@ const styles = {
     fontWeight: 600,
     fontSize: 40,
     color: '#5c2436',
-    margin: '0 0 24px',
+    margin: '0 0 8px',
+  },
+  searchBanner: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8,
+    fontSize: 14,
+    color: '#8a3a4d',
+    marginBottom: 20,
+  },
+  clearSearch: {
+    background: 'none',
+    border: 'none',
+    color: '#5c2436',
+    fontWeight: 700,
+    cursor: 'pointer',
+    fontSize: 13,
+    textDecoration: 'underline',
   },
   pillRow: {
     display: 'flex',
@@ -332,9 +345,6 @@ const styles = {
 
 const DEFAULT_FILTERS = { occasion: '', maxPrice: PRICE_MAX, delivery: 'express' };
 
-// Tracks whether the viewport is narrow (tablet/mobile) so the two-column layout
-// can stack and the sidebar can stop being sticky. Kept in JS because the page
-// uses inline styles (no CSS media queries).
 function useIsNarrow(breakpoint = 768) {
   const [narrow, setNarrow] = useState(
     typeof window !== 'undefined' ? window.innerWidth <= breakpoint : false
@@ -352,16 +362,15 @@ export default function Shop() {
   const [searchParams, setSearchParams] = useSearchParams();
   // Preselect a category from the URL (e.g. /shop?category=Birthday).
   const initialCategory = searchParams.get('category') || 'All Flowers';
+  // Search term comes from the navbar (e.g. /shop?search=rose).
+  const searchQuery = searchParams.get('search') || '';
 
   const [activeCategory, setActiveCategory] = useState(initialCategory);
   const { isWished, toggle } = useWishlist();
 
-  // Products come from the backend API (with a local fallback) — see
-  // services/products.js.
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Draft = what's shown in the sidebar; applied = what actually filters the grid.
   const [draft, setDraft] = useState(DEFAULT_FILTERS);
   const [applied, setApplied] = useState(DEFAULT_FILTERS);
 
@@ -380,7 +389,6 @@ export default function Shop() {
     };
   }, []);
 
-  // Keep the URL in sync so a category view is shareable/bookmarkable.
   const selectCategory = (cat) => {
     setActiveCategory(cat);
     if (cat === 'All Flowers') {
@@ -391,21 +399,32 @@ export default function Shop() {
     setSearchParams(searchParams, { replace: true });
   };
 
+  const clearSearch = () => {
+    searchParams.delete('search');
+    setSearchParams(searchParams, { replace: true });
+  };
+
   const applyFilters = () => setApplied(draft);
   const clearAll = () => {
     setDraft(DEFAULT_FILTERS);
     setApplied(DEFAULT_FILTERS);
     selectCategory('All Flowers');
+    clearSearch();
   };
 
   const visibleProducts = useMemo(() => {
+    const term = searchQuery.trim().toLowerCase();
     return products.filter((p) => {
       const byCategory = activeCategory === 'All Flowers' || p.category === activeCategory;
       const byOccasion = !applied.occasion || p.category === applied.occasion;
       const byPrice = p.price <= applied.maxPrice;
-      return byCategory && byOccasion && byPrice;
+      const bySearch =
+        !term ||
+        p.name.toLowerCase().includes(term) ||
+        (p.description && p.description.toLowerCase().includes(term));
+      return byCategory && byOccasion && byPrice && bySearch;
     });
-  }, [products, activeCategory, applied]);
+  }, [products, activeCategory, applied, searchQuery]);
 
   return (
     <div style={styles.page}>
@@ -518,6 +537,16 @@ export default function Shop() {
             {activeCategory === 'All Flowers' ? 'All Bouquets' : `${activeCategory} Bouquets`}
           </h1>
 
+          {searchQuery && (
+            <div style={styles.searchBanner}>
+              <Search size={14} />
+              Showing results for "{searchQuery}"
+              <button style={styles.clearSearch} onClick={clearSearch}>
+                Clear search
+              </button>
+            </div>
+          )}
+
           <div style={styles.pillRow}>
             {CATEGORIES.map((cat) => (
               <button
@@ -536,7 +565,7 @@ export default function Shop() {
           <div style={{ ...styles.grid, ...(isNarrow ? styles.gridNarrow : {}) }}>
             {loading && <p style={styles.empty}>Loading bouquets…</p>}
             {!loading && visibleProducts.length === 0 && (
-              <p style={styles.empty}>No bouquets match your filters.</p>
+              <p style={styles.empty}>No bouquets match your search or filters.</p>
             )}
             {visibleProducts.map((product, index) => (
               <Link
