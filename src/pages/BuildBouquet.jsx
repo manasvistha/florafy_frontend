@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Minus, Trash2, Sparkles, ShoppingBag, Check } from 'lucide-react';
 import Navbar from '../components/Navbar';
-import { fetchProducts } from '../services/products';
+import { BOUQUET_FLOWERS } from '../data/bouquetFlowers';
 import { useCart } from '../context/CartContext';
 
 const DELIVERY_OPTIONS = [
@@ -356,24 +356,14 @@ export default function BuildBouquet() {
   const isNarrow = useIsNarrow(900);
   const isMobile = useIsNarrow(560);
 
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  // Fixed, curated palette of buildable flowers (see data/bouquetFlowers.js).
+  const products = BOUQUET_FLOWERS;
 
   // Selected stems keyed by product id: { [id]: { id, name, price, image, qty } }
   const [selected, setSelected] = useState({});
   const [message, setMessage] = useState('');
   const [deliveryId, setDeliveryId] = useState('express');
   const [toast, setToast] = useState('');
-
-  useEffect(() => {
-    let active = true;
-    fetchProducts()
-      .then((list) => active && setProducts(list))
-      .finally(() => active && setLoading(false));
-    return () => {
-      active = false;
-    };
-  }, []);
 
   const addOne = (product) => {
     setSelected((prev) => {
@@ -512,11 +502,8 @@ export default function BuildBouquet() {
             Pick your flowers, choose your colours, and we'll arrange them beautifully.
           </p>
 
-          {loading ? (
-            <p style={styles.loading}>Loading flowers…</p>
-          ) : (
-            <div style={gridStyle}>
-              {products.map((product) => {
+          <div style={gridStyle}>
+            {products.map((product) => {
                 const sel = selected[product.id];
                 return (
                   <div
@@ -551,8 +538,7 @@ export default function BuildBouquet() {
                   </div>
                 );
               })}
-            </div>
-          )}
+          </div>
 
           {/* Bouquet Preview */}
           <p style={styles.previewLabel}>Bouquet Preview</p>
