@@ -46,7 +46,7 @@ export function CartProvider({ children }) {
     setItems((prev) =>
       persist([
         ...prev,
-        { ...item, cartId: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}` },
+        { qty: 1, ...item, cartId: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}` },
       ])
     );
   };
@@ -55,17 +55,24 @@ export function CartProvider({ children }) {
     setItems((prev) => persist(prev.filter((i) => i.cartId !== cartId)));
   };
 
+  // Change a line item's quantity (never below 1).
+  const updateQty = (cartId, qty) => {
+    setItems((prev) =>
+      persist(prev.map((i) => (i.cartId === cartId ? { ...i, qty: Math.max(1, qty) } : i)))
+    );
+  };
+
   const clear = () => {
     localStorage.removeItem(getStorageKey());
     setItems([]);
   };
 
   const count = items.length;
-  const total = items.reduce((sum, i) => sum + (i.total || 0), 0);
+  const total = items.reduce((sum, i) => sum + (i.total || 0) * (i.qty || 1), 0);
 
   return (
     <CartContext.Provider
-      value={{ items, addItem, removeItem, clear, refresh, count, total }}
+      value={{ items, addItem, removeItem, updateQty, clear, refresh, count, total }}
     >
       {children}
     </CartContext.Provider>
