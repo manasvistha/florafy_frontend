@@ -70,8 +70,10 @@ const styles = {
     background: '#fff',
     borderRadius: 14,
     overflow: 'hidden',
-    boxShadow: '0 4px 14px rgba(0,0,0,0.06)',
-    border: '2px solid transparent',
+    borderWidth: 2,
+    borderStyle: 'solid',
+    borderColor: 'transparent',
+    outline: 'none',
     cursor: 'pointer',
     transition: 'border-color 0.15s ease',
     position: 'relative',
@@ -107,6 +109,7 @@ const styles = {
     borderRadius: '50%',
     background: '#5c2436',
     border: 'none',
+    outline: 'none',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -166,17 +169,18 @@ const styles = {
   previewCount: { fontSize: 13, color: '#8a3a4d', margin: 0 },
   previewEmpty: { fontSize: 14, color: '#b48a9a' },
 
-  // ---- Sidebar ----
+  // ---- Sidebar (now matches Shop.jsx's filter sidebar: color + scrollbar) ----
   sidebar: {
-    background: '#fff',
+    background: '#f0d9e1',
     borderRadius: 18,
-    boxShadow: '0 6px 22px rgba(92,36,54,0.09)',
     padding: '22px 20px',
     position: 'sticky',
     top: 24,
     alignSelf: 'start',
     maxHeight: 'calc(100vh - 48px)',
     overflowY: 'auto',
+    scrollbarWidth: 'thin', // Firefox
+    scrollbarColor: '#c96f86 transparent', // Firefox: thumb, track
   },
   sidebarStatic: { position: 'static', top: 'auto', maxHeight: 'none', overflowY: 'visible' },
   sideTitle: {
@@ -193,7 +197,7 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     gap: 10,
-    background: '#fbeef2',
+    background: '#fff',
     borderRadius: 12,
     padding: '10px 12px',
     marginBottom: 10,
@@ -215,6 +219,7 @@ const styles = {
     height: 22,
     borderRadius: '50%',
     border: 'none',
+    outline: 'none',
     background: '#e9bccb',
     color: '#5c2436',
     display: 'flex',
@@ -225,6 +230,7 @@ const styles = {
   removeBtn: {
     background: 'none',
     border: 'none',
+    outline: 'none',
     cursor: 'pointer',
     padding: 4,
     display: 'flex',
@@ -246,7 +252,7 @@ const styles = {
     resize: 'vertical',
     borderRadius: 10,
     border: '1px solid #e0c4d0',
-    background: '#fbeef2',
+    background: '#fff',
     padding: '10px 12px',
     fontSize: 13,
     fontFamily: 'inherit',
@@ -266,7 +272,7 @@ const styles = {
     cursor: 'pointer',
     color: '#2a2420',
   },
-  divider: { border: 'none', borderTop: '1px solid #f0dae2', margin: '20px 0 14px' },
+  divider: { border: 'none', borderTop: '1px solid #e0c4d0', margin: '20px 0 14px' },
   costRow: {
     display: 'flex',
     justifyContent: 'space-between',
@@ -281,7 +287,7 @@ const styles = {
     alignItems: 'center',
     marginTop: 6,
     paddingTop: 14,
-    borderTop: '1px solid #f0dae2',
+    borderTop: '1px solid #e0c4d0',
   },
   totalLabel: { fontSize: 15, fontWeight: 700, color: '#2a2420' },
   totalValue: {
@@ -381,6 +387,22 @@ export default function BuildBouquet() {
     });
   };
 
+  const toggleCard = (product) => {
+    setSelected((prev) => {
+      if (prev[product.id]) {
+        // Already selected — clicking the card again removes it entirely.
+        const next = { ...prev };
+        delete next[product.id];
+        return next;
+      }
+      // Not selected yet — clicking adds exactly one stem.
+      return {
+        ...prev,
+        [product.id]: { id: product.id, name: product.name, price: product.price, image: product.image, qty: 1 },
+      };
+    });
+  };
+
   const decOne = (id) => {
     setSelected((prev) => {
       const existing = prev[id];
@@ -456,6 +478,27 @@ export default function BuildBouquet() {
 
   return (
     <div style={styles.page}>
+      <style>{`
+        .bouquet-sidebar::-webkit-scrollbar {
+          width: 6px;
+        }
+        .bouquet-sidebar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .bouquet-sidebar::-webkit-scrollbar-thumb {
+          background: #c96f86;
+          border-radius: 999px;
+        }
+        .bouquet-sidebar::-webkit-scrollbar-thumb:hover {
+          background: #a85a6d;
+        }
+        .flower-card,
+        .flower-card:focus,
+        .flower-card:focus-visible,
+        .flower-card * {
+          outline: none !important;
+        }
+      `}</style>
       <Navbar variant="dashboard" />
 
       <div style={{ ...styles.layout, ...(isNarrow ? styles.layoutNarrow : {}) }}>
@@ -478,11 +521,17 @@ export default function BuildBouquet() {
                 return (
                   <div
                     key={product.id}
+                    className="flower-card"
                     style={{ ...styles.card, ...(sel ? styles.cardSelected : {}) }}
-                    onClick={() => addOne(product)}
+                    onClick={() => toggleCard(product)}
                   >
                     <div style={styles.imageWrap}>
-                      <img src={product.image} alt={product.name} style={styles.image} />
+                      <img
+                        src={product.image}
+                        alt={product.name}
+                        style={styles.image}
+                        draggable={false}
+                      />
                       {sel && <span style={styles.qtyBadge}>{sel.qty}</span>}
                     </div>
                     <div style={styles.info}>
@@ -530,7 +579,10 @@ export default function BuildBouquet() {
         </section>
 
         {/* ---------------- Right: summary ---------------- */}
-        <aside style={{ ...styles.sidebar, ...(isNarrow ? styles.sidebarStatic : {}) }}>
+        <aside
+          className="bouquet-sidebar"
+          style={{ ...styles.sidebar, ...(isNarrow ? styles.sidebarStatic : {}) }}
+        >
           <h2 style={styles.sideTitle}>Your Bouquet</h2>
           <p style={styles.sideSub}>
             {stemCount} {stemCount === 1 ? 'stem' : 'stems'} selected
