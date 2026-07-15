@@ -16,7 +16,6 @@ const NAV_LINKS_BY_VARIANT = {
     { label: 'Shop', to: '/shop' },
     { label: 'Build Bouquet', to: '/build-bouquet' },
     { label: 'My Orders', to: '/my-orders' },
-    { label: 'Wishlist', to: '/wishlist' },
   ],
 };
 
@@ -181,7 +180,9 @@ export default function Navbar({ variant = 'landing' }) {
           <Link to={isDashboard ? '/dashboard' : '/'} style={styles.logo}>
             <img src="/image/florafy-logo.png" alt="Florafy" style={styles.logoImg} />
           </Link>
+        </div>
 
+        <div style={styles.actions}>
           <nav style={styles.links} aria-label="Main navigation">
             {navLinks.map(({ label, to }) => (
               <Link key={label} to={to} style={styles.link}>
@@ -189,10 +190,7 @@ export default function Navbar({ variant = 'landing' }) {
               </Link>
             ))}
           </nav>
-        </div>
 
-
-        <div style={styles.actions}>
           <form style={styles.search} onSubmit={handleSearch}>
             <Search size={16} color="#5c534d" />
             <input
