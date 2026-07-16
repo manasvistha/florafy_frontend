@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/static/css/main.a3114804.css",
-    "main.js": "/static/js/main.b2cada75.js",
+    "main.js": "/static/js/main.cfb120a1.js",
     "static/media/Login.png": "/static/media/Login.bf1e6e1bb9e9d2cbb1c5.png",
     "static/media/hero-bouquet.jpg": "/static/media/hero-bouquet.5aa4fe2449ef161a3fb9.jpg",
     "index.html": "/index.html",
     "main.a3114804.css.map": "/static/css/main.a3114804.css.map",
-    "main.b2cada75.js.map": "/static/js/main.b2cada75.js.map"
+    "main.cfb120a1.js.map": "/static/js/main.cfb120a1.js.map"
   },
   "entrypoints": [
     "static/css/main.a3114804.css",
-    "static/js/main.b2cada75.js"
+    "static/js/main.cfb120a1.js"
   ]
 }

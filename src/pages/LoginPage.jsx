@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import LoginImage from "../assets/Login.png";
 import { loginUser } from "../services/api";
@@ -182,8 +182,12 @@ function AppleIcon() {
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { refresh } = useWishlist();
   const { refresh: refreshCart } = useCart();
+
+  // Where RequireAuth wanted to send us before it bounced us to /login.
+  const redirectTo = location.state?.from?.pathname;
 
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
@@ -213,7 +217,10 @@ export default function LoginPage() {
       refresh();
       refreshCart();
 
-      navigate(data.user.role === "admin" ? "/admin" : "/dashboard");
+      // If we were redirected here from a protected page, go back to it.
+      // Otherwise fall back to the role's default landing page.
+      const defaultPath = data.user.role === "admin" ? "/admin" : "/dashboard";
+      navigate(redirectTo || defaultPath, { replace: true });
     } catch (err) {
       // This is where "wrong email/password" and "no account with this email" show up
       setError(err.message);
