@@ -4,6 +4,7 @@ import Navbar from "../components/Navbar";
 import LoginImage from "../assets/Login.png";
 import { loginUser } from "../services/api";
 import { useWishlist } from "../context/WishlistContext";
+import { useCart } from "../context/CartContext";
 
 const styles = {
   page: {
@@ -182,6 +183,7 @@ function AppleIcon() {
 export default function LoginPage() {
   const navigate = useNavigate();
   const { refresh } = useWishlist();
+  const { refresh: refreshCart } = useCart();
 
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
@@ -209,6 +211,7 @@ export default function LoginPage() {
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
       refresh();
+      refreshCart();
 
       navigate(data.user.role === "admin" ? "/admin" : "/dashboard");
     } catch (err) {

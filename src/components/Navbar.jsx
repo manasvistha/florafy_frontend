@@ -131,7 +131,7 @@ export default function Navbar({ variant = 'landing' }) {
   const navLinks = NAV_LINKS_BY_VARIANT[variant] || NAV_LINKS_BY_VARIANT.landing;
   const isDashboard = variant === 'dashboard';
   const { count, refresh } = useWishlist();
-  const { count: cartCount } = useCart();
+  const { count: cartCount, refresh: refreshCart } = useCart();
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState('');
@@ -163,6 +163,7 @@ export default function Navbar({ variant = 'landing' }) {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     refresh();
+    refreshCart();
     navigate('/login');
   };
 
