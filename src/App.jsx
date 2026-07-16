@@ -14,6 +14,7 @@ import MyOrders from './pages/MyOrders';
 import MyAccount from './pages/MyAccount';
 import RequireAuth from './components/RequireAuth';
 import RequireAdmin from './components/RequireAdmin';
+import RedirectIfAuthed from './components/RedirectIfAuthed';
 import AdminUsers from './pages/admin/AdminUsers';
 import AdminProducts from './pages/admin/AdminProducts';
 import AdminOrders from './pages/admin/AdminOrders';
@@ -24,10 +25,38 @@ function App() {
       <CartProvider>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/home" element={<LandingPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/signup" element={<SignupPage />} />
+          <Route
+            path="/"
+            element={
+              <RedirectIfAuthed>
+                <LandingPage />
+              </RedirectIfAuthed>
+            }
+          />
+          <Route
+            path="/home"
+            element={
+              <RedirectIfAuthed>
+                <LandingPage />
+              </RedirectIfAuthed>
+            }
+          />
+          <Route
+            path="/login"
+            element={
+              <RedirectIfAuthed>
+                <LoginPage />
+              </RedirectIfAuthed>
+            }
+          />
+          <Route
+            path="/signup"
+            element={
+              <RedirectIfAuthed>
+                <SignupPage />
+              </RedirectIfAuthed>
+            }
+          />
 
           {/* ---- Logged-in users only ---- */}
           <Route
