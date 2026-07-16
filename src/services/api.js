@@ -48,6 +48,25 @@ export function registerUser({ name, email, password }) {
   });
 }
 
+// The logged-in user's own account (JWT-protected, not admin-only)
+export function getMe() {
+  return authRequest('/auth/me').then((d) => d.user);
+}
+
+export function updateMe(payload) {
+  return authRequest('/auth/me', {
+    method: 'PUT',
+    body: JSON.stringify(payload),
+  }).then((d) => d.user);
+}
+
+export function changePassword(payload) {
+  return authRequest('/auth/change-password', {
+    method: 'PUT',
+    body: JSON.stringify(payload),
+  });
+}
+
 /* ---------------- Users (admin) ---------------- */
 
 export function getUsers() {

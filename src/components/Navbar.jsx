@@ -15,7 +15,7 @@ const NAV_LINKS_BY_VARIANT = {
     { label: 'Home', to: '/dashboard' },
     { label: 'Shop', to: '/shop' },
     { label: 'Build Bouquet', to: '/build-bouquet' },
-    { label: 'My Orders', to: '/my-orders' },
+    { label: 'My Account', to: '/my-account' },
   ],
 };
 
