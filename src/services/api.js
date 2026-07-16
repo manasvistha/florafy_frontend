@@ -6,8 +6,12 @@ function getToken() {
 
 async function request(path, options = {}) {
   const res = await fetch(`${API_BASE_URL}${path}`, {
-    headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
+    // Spread options FIRST so the merged headers below win. Otherwise a caller
+    // passing `headers` (e.g. authRequest's Authorization) would replace the
+    // whole object and drop Content-Type — which makes Express 5 skip body
+    // parsing and leave req.body undefined on every authenticated write.
     ...options,
+    headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
   });
 
   const data = await res.json().catch(() => ({}));
