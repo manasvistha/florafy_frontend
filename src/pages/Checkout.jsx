@@ -3,7 +3,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Minus, Plus, Check, Landmark } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import { useCart } from '../context/CartContext';
-import { createOrder } from '../services/api';
 
 // Simple promo codes (code -> % off the flowers subtotal).
 const PROMOS = { FIRST10: 0.1, BLOOM20: 0.2 };
@@ -302,17 +301,12 @@ const styles = {
 
 export default function Checkout() {
   const navigate = useNavigate();
-  const { items, removeItem, updateQty, clear } = useCart();
+  const { items, removeItem, updateQty } = useCart();
   const isNarrow = useIsNarrow();
 
   const [promoInput, setPromoInput] = useState('');
   const [promo, setPromo] = useState(null); // { code, rate }
   const [promoError, setPromoError] = useState('');
-
-  const [showAddress, setShowAddress] = useState(false);
-  const [form, setForm] = useState({ fullName: '', phone: '', street: '', city: '', notes: '' });
-  const [error, setError] = useState('');
-  const [placing, setPlacing] = useState(false);
 
   const qtyOf = (ci) => ci.qty || 1;
 
@@ -343,42 +337,9 @@ export default function Checkout() {
     }
   };
 
-  const setField = (key) => (e) => setForm({ ...form, [key]: e.target.value });
-
-  const placeOrder = async (e) => {
-    e.preventDefault();
-    setError('');
-    if (!form.fullName || !form.phone || !form.street || !form.city) {
-      setError('Please fill in your name, phone, street and city.');
-      return;
-    }
-    // Flatten every bouquet's stems (× line quantity) into API order items.
-    const map = new Map();
-    items.forEach((ci) => {
-      const q = ci.qty || 1;
-      (ci.stems || []).forEach((s) => {
-        map.set(s.id, (map.get(s.id) || 0) + s.qty * q);
-      });
-    });
-    const orderItems = Array.from(map.entries()).map(([product, quantity]) => ({ product, quantity }));
-    if (orderItems.length === 0) {
-      setError('Your cart is empty.');
-      return;
-    }
-    const messages = items.map((ci) => ci.message).filter(Boolean);
-    const notes = [form.notes, ...messages].filter(Boolean).join(' | ');
-
-    setPlacing(true);
-    try {
-      await createOrder({ items: orderItems, deliveryAddress: { ...form, notes } });
-      clear();
-      navigate('/my-orders');
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setPlacing(false);
-    }
-  };
+  // Step 2 (delivery + payment) lives on the My Orders page; carry the promo over
+  // so its Order Summary shows the same discount.
+  const goToDelivery = () => navigate('/my-orders', { state: { promo } });
 
   if (items.length === 0) {
     return (
@@ -501,7 +462,7 @@ export default function Checkout() {
               <span style={styles.totalValue}>Rs. {grandTotal.toLocaleString()}</span>
             </div>
 
-            <button style={styles.proceedBtn} onClick={() => setShowAddress(true)}>
+            <button style={styles.proceedBtn} onClick={goToDelivery}>
               Proceed to Checkout
             </button>
             <button style={styles.continueBtn} onClick={() => navigate('/shop')}>
@@ -520,40 +481,6 @@ export default function Checkout() {
         </div>
       </div>
 
-      {/* -------- Delivery address modal -------- */}
-      {showAddress && (
-        <div style={styles.overlay} onClick={() => setShowAddress(false)}>
-          <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
-            <h3 style={styles.modalTitle}>Delivery Details</h3>
-            {error && <div style={styles.errorBox}>{error}</div>}
-            <form onSubmit={placeOrder}>
-              <label style={styles.label}>Full Name</label>
-              <input style={styles.input} value={form.fullName} onChange={setField('fullName')} />
-              <label style={styles.label}>Phone</label>
-              <input style={styles.input} value={form.phone} onChange={setField('phone')} />
-              <label style={styles.label}>Street Address</label>
-              <input style={styles.input} value={form.street} onChange={setField('street')} />
-              <label style={styles.label}>City</label>
-              <input style={styles.input} value={form.city} onChange={setField('city')} />
-              <label style={styles.label}>Delivery Notes (optional)</label>
-              <input style={styles.input} value={form.notes} onChange={setField('notes')} />
-
-              <div style={styles.modalActions}>
-                <button type="button" style={styles.ghostBtn} onClick={() => setShowAddress(false)}>
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  style={{ ...styles.placeBtn, ...(placing ? styles.btnDisabled : {}) }}
-                  disabled={placing}
-                >
-                  {placing ? 'Placing…' : `Place Order · Rs. ${grandTotal.toLocaleString()}`}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
