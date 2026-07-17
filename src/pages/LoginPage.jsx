@@ -1,6 +1,9 @@
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import LoginImage from "../assets/Login.png";
+import { loginUser } from "../services/api";
+import { useWishlist } from "../context/WishlistContext";
 
 const styles = {
   page: {
@@ -28,7 +31,7 @@ const styles = {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    background: "#FCF3F6", 
+    background: "#FCF3F6",
   },
 
   image: {
@@ -57,7 +60,17 @@ const styles = {
   subtext: {
     fontSize: "18px",
     color: "#4e6655",
-    marginBottom: "35px",
+    marginBottom: "20px",
+  },
+
+  errorBox: {
+    background: "#fdecea",
+    border: "1px solid #f5c2c0",
+    color: "#c62828",
+    fontSize: "14px",
+    padding: "10px 14px",
+    borderRadius: "8px",
+    marginBottom: "20px",
   },
 
   label: {
@@ -76,6 +89,10 @@ const styles = {
     outline: "none",
     marginBottom: "20px",
     boxSizing: "border-box",
+  },
+
+  inputError: {
+    border: "1px solid #e57373",
   },
 
   forgotRow: {
@@ -102,6 +119,11 @@ const styles = {
     fontWeight: "600",
     cursor: "pointer",
     marginBottom: "25px",
+  },
+
+  loginBtnDisabled: {
+    opacity: 0.7,
+    cursor: "not-allowed",
   },
 
   socialRow: {
@@ -158,6 +180,45 @@ function AppleIcon() {
 }
 
 export default function LoginPage() {
+  const navigate = useNavigate();
+  const { refresh } = useWishlist();
+
+  const [formData, setFormData] = useState({ email: "", password: "" });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+    if (error) setError(""); // clear old error as soon as they start correcting it
+  };
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setError("");
+
+    if (!formData.email || !formData.password) {
+      setError("Please enter both your email and password.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const data = await loginUser(formData);
+
+      // Store the session so refreshes and other pages know who's logged in
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      refresh();
+
+      navigate(data.user.role === "admin" ? "/admin" : "/dashboard");
+    } catch (err) {
+      // This is where "wrong email/password" and "no account with this email" show up
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <>
       <Navbar />
@@ -181,31 +242,54 @@ export default function LoginPage() {
               Welcome back! Please enter your details.
             </p>
 
-            <label style={styles.label}>Email address</label>
+            {error && <div style={styles.errorBox}>{error}</div>}
 
-            <input
-              type="email"
-              placeholder="Enter your email"
-              style={styles.input}
-            />
+            <form onSubmit={handleLogin}>
+              <label style={styles.label}>Email address</label>
 
-            <label style={styles.label}>Password</label>
+              <input
+                type="email"
+                name="email"
+                placeholder="Enter your email"
+                value={formData.email}
+                onChange={handleChange}
+                style={{
+                  ...styles.input,
+                  ...(error ? styles.inputError : {}),
+                }}
+              />
 
-            <input
-              type="password"
-              placeholder="Enter your password"
-              style={styles.input}
-            />
+              <label style={styles.label}>Password</label>
 
-            <div style={styles.forgotRow}>
-              <a href="/forgot-password" style={styles.forgotLink}>
-                Forgot password?
-              </a>
-            </div>
+              <input
+                type="password"
+                name="password"
+                placeholder="Enter your password"
+                value={formData.password}
+                onChange={handleChange}
+                style={{
+                  ...styles.input,
+                  ...(error ? styles.inputError : {}),
+                }}
+              />
 
-            <button style={styles.loginBtn}>
-              Login
-            </button>
+              <div style={styles.forgotRow}>
+                <a href="/forgot-password" style={styles.forgotLink}>
+                  Forgot password?
+                </a>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                style={{
+                  ...styles.loginBtn,
+                  ...(loading ? styles.loginBtnDisabled : {}),
+                }}
+              >
+                {loading ? "Logging in..." : "Login"}
+              </button>
+            </form>
 
             <div style={styles.socialRow}>
               <button style={styles.socialBtn}>

@@ -1,6 +1,9 @@
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import SignupImage from "../assets/Login.png";
+import { registerUser } from "../services/api";
+import { useWishlist } from "../context/WishlistContext";
 
 const styles = {
   page: {
@@ -57,7 +60,17 @@ const styles = {
   subtext: {
     fontSize: "18px",
     color: "#4e6655",
-    marginBottom: "30px",
+    marginBottom: "20px",
+  },
+
+  errorBox: {
+    background: "#fdecea",
+    border: "1px solid #f5c2c0",
+    color: "#c62828",
+    fontSize: "14px",
+    padding: "10px 14px",
+    borderRadius: "8px",
+    marginBottom: "20px",
   },
 
   label: {
@@ -79,6 +92,17 @@ const styles = {
     boxSizing: "border-box",
   },
 
+  inputError: {
+    border: "1px solid #e57373",
+  },
+
+  hintText: {
+    fontSize: "12px",
+    color: "#777",
+    marginTop: "-12px",
+    marginBottom: "18px",
+  },
+
   button: {
     width: "100%",
     padding: "14px",
@@ -91,6 +115,11 @@ const styles = {
     cursor: "pointer",
     marginTop: "15px",
     marginBottom: "25px",
+  },
+
+  buttonDisabled: {
+    opacity: 0.7,
+    cursor: "not-allowed",
   },
 
   footerText: {
@@ -107,6 +136,83 @@ const styles = {
 };
 
 export default function SignupPage() {
+  const navigate = useNavigate();
+  const { refresh } = useWishlist();
+
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+    if (error) setError("");
+  };
+
+  const validatePassword = (password) => {
+    if (password.length < 8) {
+      return "Password must be at least 8 characters long.";
+    }
+    if (!/[A-Z]/.test(password)) {
+      return "Password must include at least one uppercase letter.";
+    }
+    if (!/[a-z]/.test(password)) {
+      return "Password must include at least one lowercase letter.";
+    }
+    if (!/[0-9]/.test(password)) {
+      return "Password must include at least one number.";
+    }
+    if (!/[!@#$%^&*(),.?":{}|<>_\-]/.test(password)) {
+      return "Password must include at least one special character (e.g. ! @ # $ %).";
+    }
+    return null;
+  };
+
+  const handleSignup = async (e) => {
+    e.preventDefault();
+    setError("");
+
+    if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword) {
+      setError("Please fill in all fields.");
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
+    const passwordError = validatePassword(formData.password);
+    if (passwordError) {
+      setError(passwordError);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const data = await registerUser({
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+      });
+
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      refresh();
+
+      navigate("/dashboard");
+    } catch (err) {
+      // This is where "an account with this email already exists" shows up
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <>
       <Navbar />
@@ -132,49 +238,60 @@ export default function SignupPage() {
               Join Florafy and start shopping beautiful flowers.
             </p>
 
-            <label style={styles.label}>
-              Full Name
-            </label>
+            {error && <div style={styles.errorBox}>{error}</div>}
 
-            <input
-              type="text"
-              placeholder="Enter your full name"
-              style={styles.input}
-            />
+            <form onSubmit={handleSignup}>
+              <label style={styles.label}>Full Name</label>
+              <input
+                type="text"
+                name="name"
+                placeholder="Enter your full name"
+                value={formData.name}
+                onChange={handleChange}
+                style={{ ...styles.input, ...(error ? styles.inputError : {}) }}
+              />
 
-            <label style={styles.label}>
-              Email Address
-            </label>
+              <label style={styles.label}>Email Address</label>
+              <input
+                type="email"
+                name="email"
+                placeholder="Enter your email"
+                value={formData.email}
+                onChange={handleChange}
+                style={{ ...styles.input, ...(error ? styles.inputError : {}) }}
+              />
 
-            <input
-              type="email"
-              placeholder="Enter your email"
-              style={styles.input}
-            />
+              <label style={styles.label}>Password</label>
+              <input
+                type="password"
+                name="password"
+                placeholder="Enter your password"
+                value={formData.password}
+                onChange={handleChange}
+                style={{ ...styles.input, ...(error ? styles.inputError : {}) }}
+              />
+              <p style={styles.hintText}>
+                At least 8 characters, with uppercase, lowercase, a number, and a special character.
+              </p>
 
-            <label style={styles.label}>
-              Password
-            </label>
+              <label style={styles.label}>Confirm Password</label>
+              <input
+                type="password"
+                name="confirmPassword"
+                placeholder="Confirm your password"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                style={{ ...styles.input, ...(error ? styles.inputError : {}) }}
+              />
 
-            <input
-              type="password"
-              placeholder="Enter your password"
-              style={styles.input}
-            />
-
-            <label style={styles.label}>
-              Confirm Password
-            </label>
-
-            <input
-              type="password"
-              placeholder="Confirm your password"
-              style={styles.input}
-            />
-
-            <button style={styles.button}>
-              Join Us
-            </button>
+              <button
+                type="submit"
+                disabled={loading}
+                style={{ ...styles.button, ...(loading ? styles.buttonDisabled : {}) }}
+              >
+                {loading ? "Creating account..." : "Join Us"}
+              </button>
+            </form>
 
             <p style={styles.footerText}>
               Already have an account?{" "}
