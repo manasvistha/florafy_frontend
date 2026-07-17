@@ -310,10 +310,17 @@ export default function MyOrders() {
   const navigate = useNavigate();
   const location = useLocation();
   const isNarrow = useIsNarrow();
-  const { items, clear } = useCart();
+  const { items, removeMany } = useCart();
 
   // Promo carried over from the cart page (if the user applied one there).
   const promo = location.state?.promo || null;
+
+  // Only the lines ticked on the cart page get checked out. Arriving here
+  // directly (no state) falls back to the whole cart.
+  const selectedIds = location.state?.selectedIds || null;
+  const checkoutItems = selectedIds
+    ? items.filter((ci) => selectedIds.includes(ci.cartId))
+    : items;
 
   const [form, setForm] = useState({
     firstName: '',
@@ -345,10 +352,11 @@ export default function MyOrders() {
 
   const setField = (key) => (e) => setForm({ ...form, [key]: e.target.value });
 
-  // Totals from the cart (each bouquet's total already includes its delivery).
+  // Totals from the selected cart lines (each bouquet's total already includes
+  // its delivery).
   let subtotal = 0;
   let deliveryTotal = 0;
-  items.forEach((ci) => {
+  checkoutItems.forEach((ci) => {
     const q = ci.qty || 1;
     subtotal += (ci.flowersTotal ?? ci.total ?? 0) * q;
     deliveryTotal += (ci.delivery?.charge || 0) * q;
@@ -364,7 +372,7 @@ export default function MyOrders() {
     }
 
     const map = new Map();
-    items.forEach((ci) => {
+    checkoutItems.forEach((ci) => {
       const q = ci.qty || 1;
       (ci.stems || []).forEach((s) => map.set(s.id, (map.get(s.id) || 0) + s.qty * q));
     });
@@ -378,7 +386,7 @@ export default function MyOrders() {
       form.landmark && `Landmark: ${form.landmark}`,
       (form.date || form.time) && `Preferred: ${form.date} ${form.time}`.trim(),
       form.giftMessage && `Gift note: ${form.giftMessage}`,
-      ...items.map((ci) => ci.message).filter(Boolean),
+      ...checkoutItems.map((ci) => ci.message).filter(Boolean),
     ]
       .filter(Boolean)
       .join(' | ');
@@ -396,7 +404,8 @@ export default function MyOrders() {
           notes,
         },
       });
-      clear();
+      // Only clear what was actually ordered — unselected lines stay in the cart.
+      removeMany(checkoutItems.map((ci) => ci.cartId));
       loadOrders();
       navigate('/my-orders', { replace: true, state: {} });
     } catch (err) {
@@ -406,7 +415,7 @@ export default function MyOrders() {
     }
   };
 
-  const hasCart = items.length > 0;
+  const hasCart = checkoutItems.length > 0;
 
   return (
     <div style={styles.page}>
@@ -510,7 +519,7 @@ export default function MyOrders() {
             {/* -------- Right: order summary -------- */}
             <aside style={styles.summary}>
               <h2 style={styles.sumTitle}>Order Summary</h2>
-              {items.map((ci) => (
+              {checkoutItems.map((ci) => (
                 <div key={ci.cartId} style={styles.sumRow}>
                   <span>
                     {ci.name}

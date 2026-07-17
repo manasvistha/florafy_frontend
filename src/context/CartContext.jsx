@@ -55,6 +55,12 @@ export function CartProvider({ children }) {
     setItems((prev) => persist(prev.filter((i) => i.cartId !== cartId)));
   };
 
+  // Drop several lines at once — used after checking out only the SELECTED
+  // items, so anything left unselected stays in the cart.
+  const removeMany = (cartIds = []) => {
+    setItems((prev) => persist(prev.filter((i) => !cartIds.includes(i.cartId))));
+  };
+
   // Change a line item's quantity (never below 1).
   const updateQty = (cartId, qty) => {
     setItems((prev) =>
@@ -72,7 +78,7 @@ export function CartProvider({ children }) {
 
   return (
     <CartContext.Provider
-      value={{ items, addItem, removeItem, updateQty, clear, refresh, count, total }}
+      value={{ items, addItem, removeItem, removeMany, updateQty, clear, refresh, count, total }}
     >
       {children}
     </CartContext.Provider>
