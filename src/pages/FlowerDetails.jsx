@@ -9,10 +9,12 @@ import {
   Truck,
   Leaf,
   CreditCard,
+  Check,
 } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import { fetchProductById } from '../services/products';
 import { useWishlist } from '../context/WishlistContext';
+import { useCart } from '../context/CartContext';
 
 const styles = {
   page: {
@@ -183,6 +185,23 @@ const styles = {
     opacity: 0.5,
     cursor: 'not-allowed',
   },
+  toast: {
+    position: 'fixed',
+    bottom: 24,
+    left: '50%',
+    transform: 'translateX(-50%)',
+    background: '#5c2436',
+    color: '#fff',
+    padding: '12px 22px',
+    borderRadius: 999,
+    fontSize: 14,
+    fontWeight: 600,
+    boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8,
+    zIndex: 200,
+  },
   stockIn: {
     fontSize: 14,
     fontWeight: 600,
@@ -240,7 +259,9 @@ export default function FlowerDetails() {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
+  const [toast, setToast] = useState('');
   const { isWished, toggle } = useWishlist();
+  const cart = useCart();
 
   // Fetch the flower from the backend API (with local fallback) by id.
   useEffect(() => {
@@ -295,6 +316,42 @@ export default function FlowerDetails() {
   const increase = () =>
     setQuantity((q) => (hasStockInfo ? Math.min(product.stock, q + 1) : q + 1));
 
+  // Mirrors the custom-bouquet cart shape (notably `stems`) so the cart summary
+  // and order placement — which flattens stems into API line items — work for
+  // single products too.
+  const buildCartItem = () => ({
+    type: 'product',
+    name: product.name,
+    stems: [
+      {
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        image: product.image,
+        qty: quantity,
+      },
+    ],
+    stemCount: quantity,
+    message: '',
+    delivery: null,
+    flowersTotal: product.price * quantity,
+    total: product.price * quantity,
+    thumbnail: product.image,
+  });
+
+  const handleAddToCart = () => {
+    if (outOfStock) return;
+    cart.addItem(buildCartItem());
+    setToast(`${quantity} × ${product.name} added to cart`);
+    setTimeout(() => setToast(''), 2400);
+  };
+
+  const handleBuyNow = () => {
+    if (outOfStock) return;
+    cart.addItem(buildCartItem());
+    navigate('/checkout');
+  };
+
   return (
     <div style={styles.page}>
       <Navbar variant="dashboard" />
@@ -340,13 +397,14 @@ export default function FlowerDetails() {
               <button
                 style={{ ...styles.addBtn, ...(outOfStock ? styles.btnDisabled : {}) }}
                 disabled={outOfStock}
+                onClick={handleAddToCart}
               >
                 <ShoppingBag size={16} /> Add to Cart · Rs. {product.price * quantity}
               </button>
               <button
                 style={{ ...styles.buyBtn, ...(outOfStock ? styles.btnDisabled : {}) }}
                 disabled={outOfStock}
-                onClick={() => !outOfStock && navigate('/shop')}
+                onClick={handleBuyNow}
               >
                 <CreditCard size={16} /> Buy Now
               </button>
@@ -377,6 +435,12 @@ export default function FlowerDetails() {
           </div>
         </div>
       </div>
+
+      {toast && (
+        <div style={styles.toast}>
+          <Check size={16} /> {toast}
+        </div>
+      )}
     </div>
   );
 }

@@ -151,9 +151,14 @@ export default function Dashboard() {
   const { isWished, toggle } = useWishlist();
 
   // Filters the grid in place — clicking a pill never navigates anywhere.
+  // The dashboard is only a highlight reel, so cap it at 12 bouquets;
+  // "VIEW ALL" goes to the Shop for the full catalogue.
   const visibleProducts = useMemo(() => {
-    if (activeCategory === 'All Flowers') return PRODUCTS;
-    return PRODUCTS.filter((p) => p.category === activeCategory);
+    const list =
+      activeCategory === 'All Flowers'
+        ? PRODUCTS
+        : PRODUCTS.filter((p) => p.category === activeCategory);
+    return list.slice(0, 12);
   }, [activeCategory]);
 
   return (
