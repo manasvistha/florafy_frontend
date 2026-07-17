@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { WishlistProvider } from './context/WishlistContext';
+import { CartProvider } from './context/CartContext';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
@@ -8,10 +9,12 @@ import FlowerDetails from './pages/FlowerDetails';
 import Shop from './pages/Shop';
 import Wishlist from './pages/Wishlist';
 import BuildBouquet from './pages/BuildBouquet';
+import Checkout from './pages/Checkout';
 import MyOrders from './pages/MyOrders';
 import MyAccount from './pages/MyAccount';
 import RequireAuth from './components/RequireAuth';
 import RequireAdmin from './components/RequireAdmin';
+import RedirectIfAuthed from './components/RedirectIfAuthed';
 import AdminUsers from './pages/admin/AdminUsers';
 import AdminProducts from './pages/admin/AdminProducts';
 import AdminOrders from './pages/admin/AdminOrders';
@@ -19,12 +22,41 @@ import AdminOrders from './pages/admin/AdminOrders';
 function App() {
   return (
     <WishlistProvider>
+      <CartProvider>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/home" element={<LandingPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/signup" element={<SignupPage />} />
+          <Route
+            path="/"
+            element={
+              <RedirectIfAuthed>
+                <LandingPage />
+              </RedirectIfAuthed>
+            }
+          />
+          <Route
+            path="/home"
+            element={
+              <RedirectIfAuthed>
+                <LandingPage />
+              </RedirectIfAuthed>
+            }
+          />
+          <Route
+            path="/login"
+            element={
+              <RedirectIfAuthed>
+                <LoginPage />
+              </RedirectIfAuthed>
+            }
+          />
+          <Route
+            path="/signup"
+            element={
+              <RedirectIfAuthed>
+                <SignupPage />
+              </RedirectIfAuthed>
+            }
+          />
 
           {/* ---- Logged-in users only ---- */}
           <Route
@@ -64,6 +96,14 @@ function App() {
             element={
               <RequireAuth>
                 <BuildBouquet />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/checkout"
+            element={
+              <RequireAuth>
+                <Checkout />
               </RequireAuth>
             }
           />
@@ -112,6 +152,7 @@ function App() {
           />
         </Routes>
       </BrowserRouter>
+      </CartProvider>
     </WishlistProvider>
   );
 }

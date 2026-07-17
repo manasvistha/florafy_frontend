@@ -6,8 +6,12 @@ function getToken() {
 
 async function request(path, options = {}) {
   const res = await fetch(`${API_BASE_URL}${path}`, {
-    headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
+    // Spread options FIRST so the merged headers below win. Otherwise a caller
+    // passing `headers` (e.g. authRequest's Authorization) would replace the
+    // whole object and drop Content-Type — which makes Express 5 skip body
+    // parsing and leave req.body undefined on every authenticated write.
     ...options,
+    headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
   });
 
   const data = await res.json().catch(() => ({}));
@@ -45,6 +49,25 @@ export function registerUser({ name, email, password }) {
   return request('/auth/register', {
     method: 'POST',
     body: JSON.stringify({ name, email, password }),
+  });
+}
+
+// The logged-in user's own account (JWT-protected, not admin-only)
+export function getMe() {
+  return authRequest('/auth/me').then((d) => d.user);
+}
+
+export function updateMe(payload) {
+  return authRequest('/auth/me', {
+    method: 'PUT',
+    body: JSON.stringify(payload),
+  }).then((d) => d.user);
+}
+
+export function changePassword(payload) {
+  return authRequest('/auth/change-password', {
+    method: 'PUT',
+    body: JSON.stringify(payload),
   });
 }
 

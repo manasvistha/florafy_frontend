@@ -4,6 +4,7 @@ import Navbar from "../components/Navbar";
 import SignupImage from "../assets/Login.png";
 import { registerUser } from "../services/api";
 import { useWishlist } from "../context/WishlistContext";
+import { useCart } from "../context/CartContext";
 
 const styles = {
   page: {
@@ -138,6 +139,7 @@ const styles = {
 export default function SignupPage() {
   const navigate = useNavigate();
   const { refresh } = useWishlist();
+  const { refresh: refreshCart } = useCart();
 
   const [formData, setFormData] = useState({
     name: "",
@@ -203,6 +205,7 @@ export default function SignupPage() {
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
       refresh();
+      refreshCart();
 
       navigate("/dashboard");
     } catch (err) {
