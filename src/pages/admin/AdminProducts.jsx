@@ -11,6 +11,20 @@ import {
 
 const CATEGORIES = ['Birthday', 'Anniversary', 'Decoration', 'Other'];
 
+// Images already available in /public/image/products — the admin can pick one
+// here, or type any other path/URL in the field above.
+const AVAILABLE_IMAGES = [
+  'image1.png', 'image2.png', 'image3.png', 'image4.png',
+  'image5.png', 'image6.png', 'image7.png', 'image8.png',
+  'rose.jpg', 'rose2.jpg', 'rosepink.jpg', 'roseblue.jpg', 'rosemix.jpg',
+  'tulip.jpg', 'lily.jpg', 'sunflower.jpg', 'daisy.jpg', 'hibiscus.jpg',
+  'lotus.jpg', 'orchid.jpg', 'mixed.jpg',
+  'birthday.jpg', 'birthday1.jpg', 'birthday2.jpg', 'birthday3.jpg',
+  'birthday4.jpg', 'birthday5.jpg', 'birthday6.jpg', 'birthday7.jpg',
+  'birthday8.jpg', 'birthday9.jpg', 'birthday10.jpg', 'birthday11.jpg',
+  'birthday12.jpg', 'birthday13.jpg', 'birthday14.jpg', 'birthday15.jpg',
+].map((f) => `/image/products/${f}`);
+
 const EMPTY = {
   name: '',
   description: '',
@@ -274,13 +288,78 @@ export default function AdminProducts() {
               ))}
             </select>
 
-            <label style={ui.label}>Image URL / path</label>
-            <input
-              style={ui.input}
-              value={form.image}
-              onChange={(e) => setForm({ ...form, image: e.target.value })}
-              placeholder="/image/products/rose.jpg"
-            />
+            <label style={ui.label}>Image</label>
+            <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', marginBottom: 10 }}>
+              <div
+                style={{
+                  width: 64,
+                  height: 64,
+                  borderRadius: 8,
+                  background: '#f4e6ec',
+                  overflow: 'hidden',
+                  flexShrink: 0,
+                  border: '1px solid #eddbe3',
+                }}
+              >
+                {form.image ? (
+                  <img
+                    src={form.image}
+                    alt="preview"
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
+                ) : null}
+              </div>
+              <input
+                style={{ ...ui.input, marginBottom: 0 }}
+                value={form.image}
+                onChange={(e) => setForm({ ...form, image: e.target.value })}
+                placeholder="/image/products/rose.jpg  (or pick below)"
+              />
+            </div>
+
+            <p style={{ fontSize: 12, color: '#8a8a8a', margin: '0 0 8px' }}>
+              Or select from existing images:
+            </p>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(6, 1fr)',
+                gap: 8,
+                maxHeight: 180,
+                overflowY: 'auto',
+                padding: 4,
+                marginBottom: 16,
+                border: '1px solid #f0dae2',
+                borderRadius: 10,
+              }}
+            >
+              {AVAILABLE_IMAGES.map((src) => {
+                const active = form.image === src;
+                return (
+                  <button
+                    type="button"
+                    key={src}
+                    onClick={() => setForm({ ...form, image: src })}
+                    title={src.split('/').pop()}
+                    style={{
+                      padding: 0,
+                      border: active ? '2px solid #5c2436' : '2px solid transparent',
+                      borderRadius: 8,
+                      overflow: 'hidden',
+                      cursor: 'pointer',
+                      aspectRatio: '1 / 1',
+                      background: '#f7edf1',
+                    }}
+                  >
+                    <img
+                      src={src}
+                      alt=""
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                    />
+                  </button>
+                );
+              })}
+            </div>
 
             <div style={ui.modalActions}>
               <button

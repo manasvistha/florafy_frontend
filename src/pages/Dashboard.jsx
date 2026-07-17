@@ -1,8 +1,8 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Heart, Plus } from 'lucide-react';
 import Navbar from '../components/Navbar';
-import { PRODUCTS } from '../data/products';
+import { fetchProducts } from '../services/products';
 import { useWishlist } from '../context/WishlistContext';
 
 const CATEGORIES = ['All Flowers', 'Birthday', 'Anniversary', 'Decoration'];
@@ -150,16 +150,29 @@ export default function Dashboard() {
   const [activeCategory, setActiveCategory] = useState('All Flowers');
   const { isWished, toggle } = useWishlist();
 
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    fetchProducts()
+      .then((list) => active && setProducts(list))
+      .finally(() => active && setLoading(false));
+    return () => {
+      active = false;
+    };
+  }, []);
+
   // Filters the grid in place — clicking a pill never navigates anywhere.
   // The dashboard is only a highlight reel, so cap it at 12 bouquets;
   // "VIEW ALL" goes to the Shop for the full catalogue.
   const visibleProducts = useMemo(() => {
     const list =
       activeCategory === 'All Flowers'
-        ? PRODUCTS
-        : PRODUCTS.filter((p) => p.category === activeCategory);
+        ? products
+        : products.filter((p) => p.category === activeCategory);
     return list.slice(0, 12);
-  }, [activeCategory]);
+  }, [products, activeCategory]);
 
   return (
     <div style={styles.page}>
@@ -188,7 +201,8 @@ export default function Dashboard() {
         </div>
 
         <div style={styles.grid}>
-          {visibleProducts.length === 0 && (
+          {loading && <p style={styles.empty}>Loading bouquets…</p>}
+          {!loading && visibleProducts.length === 0 && (
             <p style={styles.empty}>No bouquets in this category yet.</p>
           )}
           {visibleProducts.map((product, index) => (

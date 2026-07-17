@@ -1,5 +1,5 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Users, Flower2, Package, LogOut, Store } from 'lucide-react';
+import { Users, Flower2, Package, LogOut } from 'lucide-react';
 
 const NAV = [
   { to: '/admin/users', label: 'Users', icon: Users },
@@ -119,9 +119,6 @@ export default function AdminLayout({ children }) {
 
         <div style={styles.spacer} />
 
-        <Link to="/dashboard" style={styles.footerLink}>
-          <Store size={18} /> View Shop
-        </Link>
         <button style={styles.footerLink} onClick={handleLogout}>
           <LogOut size={18} /> Logout
         </button>
