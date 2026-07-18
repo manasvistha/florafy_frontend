@@ -33,6 +33,7 @@ const EMPTY = {
   category: 'Other',
   image: '',
   stock: '',
+  buildable: false,
 };
 
 export default function AdminProducts() {
@@ -96,6 +97,7 @@ export default function AdminProducts() {
       category: p.category || 'Other',
       image: p.image || '',
       stock: p.stock ?? '',
+      buildable: !!p.buildable,
     });
     setError('');
     setModalOpen(true);
@@ -110,6 +112,7 @@ export default function AdminProducts() {
       ...form,
       price: Number(form.price),
       stock: Number(form.stock) || 0,
+      buildable: !!form.buildable,
     };
 
     try {
@@ -403,6 +406,27 @@ export default function AdminProducts() {
                 );
               })}
             </div>
+
+            <label
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
+                marginTop: 4,
+                marginBottom: 16,
+                cursor: 'pointer',
+                fontSize: 14,
+                color: '#2a2420',
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={form.buildable}
+                onChange={(e) => setForm({ ...form, buildable: e.target.checked })}
+                style={{ width: 16, height: 16, accentColor: '#5c2436' }}
+              />
+              Available in Build Bouquet (single stem)
+            </label>
 
             <div style={ui.modalActions}>
               <button

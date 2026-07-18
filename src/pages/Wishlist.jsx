@@ -159,15 +159,29 @@ export default function Wishlist() {
 
   // Resolve the saved ids against the live catalogue from the backend.
   const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     let active = true;
     fetchProducts()
       .then((list) => active && setProducts(list))
-      .catch(() => active && setProducts([]));
+      .catch(() => active && setProducts([]))
+      .finally(() => active && setLoading(false));
     return () => {
       active = false;
     };
   }, []);
+
+  // Once the live catalogue has loaded, drop any saved ids whose product no
+  // longer exists (e.g. after the shop was reseeded with new ids) so the heart
+  // badge count matches what's actually shown here.
+  useEffect(() => {
+    if (products.length === 0) return;
+    const valid = new Set(products.map((p) => String(p.id)));
+    ids.forEach((id) => {
+      if (!valid.has(String(id))) remove(id);
+    });
+  }, [products]); // eslint-disable-line
 
   const byId = new Map(products.map((p) => [String(p.id), p]));
   const items = ids.map((id) => byId.get(String(id))).filter(Boolean);
@@ -177,7 +191,11 @@ export default function Wishlist() {
       <Navbar variant="dashboard" />
 
       <div style={styles.container}>
-        {items.length === 0 ? (
+        {loading ? (
+          <div style={styles.empty}>
+            <p style={styles.emptyText}>Loading your wishlist…</p>
+          </div>
+        ) : items.length === 0 ? (
           <div style={styles.empty}>
             <div style={styles.emptyIcon}>
               <Heart size={32} />

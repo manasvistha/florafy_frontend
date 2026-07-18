@@ -15,6 +15,7 @@ function normalize(p) {
     description: p.description || '',
     // stock may legitimately be 0; only treat missing as "unknown".
     stock: typeof p.stock === 'number' ? p.stock : null,
+    buildable: !!p.buildable,
   };
 }
 
