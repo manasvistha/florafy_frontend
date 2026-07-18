@@ -11,7 +11,8 @@ const styles = {
   shell: {
     display: 'grid',
     gridTemplateColumns: '240px 1fr',
-    minHeight: '100vh',
+    height: '100vh',
+    overflow: 'hidden',
     fontFamily: "'Poppins', sans-serif",
     background: '#f7e9ee',
   },
@@ -21,6 +22,8 @@ const styles = {
     padding: '28px 18px',
     display: 'flex',
     flexDirection: 'column',
+    height: '100vh',
+    overflowY: 'auto',
   },
   brand: {
     fontFamily: "'Cormorant Garamond', serif",
@@ -80,6 +83,7 @@ const styles = {
   },
   content: {
     padding: '36px 40px 60px',
+    height: '100vh',
     overflowY: 'auto',
   },
 };
