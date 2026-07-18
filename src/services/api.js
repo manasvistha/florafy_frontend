@@ -88,6 +88,26 @@ export function deleteUser(id) {
   return authRequest(`/users/${id}`, { method: 'DELETE' });
 }
 
+/* ---------------- Image upload (admin) ---------------- */
+
+// Uploads a File to the backend and returns its public URL. Uses FormData, so
+// we must NOT set Content-Type — the browser adds the multipart boundary.
+export function uploadImage(file) {
+  const token = getToken();
+  const body = new FormData();
+  body.append('image', file);
+
+  return fetch(`${API_BASE_URL}/upload`, {
+    method: 'POST',
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body,
+  }).then(async (res) => {
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.message || 'Image upload failed');
+    return data.url;
+  });
+}
+
 /* ---------------- Products ---------------- */
 
 export function getProducts(params = {}) {

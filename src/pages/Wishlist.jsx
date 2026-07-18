@@ -1,7 +1,8 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Heart, Plus, Trash2 } from 'lucide-react';
 import Navbar from '../components/Navbar';
-import { getProductById } from '../data/products';
+import { fetchProducts } from '../services/products';
 import { useWishlist } from '../context/WishlistContext';
 
 const styles = {
@@ -156,7 +157,20 @@ const styles = {
 export default function Wishlist() {
   const { ids, remove, clear } = useWishlist();
 
-  const items = ids.map((id) => getProductById(id)).filter(Boolean);
+  // Resolve the saved ids against the live catalogue from the backend.
+  const [products, setProducts] = useState([]);
+  useEffect(() => {
+    let active = true;
+    fetchProducts()
+      .then((list) => active && setProducts(list))
+      .catch(() => active && setProducts([]));
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const byId = new Map(products.map((p) => [String(p.id), p]));
+  const items = ids.map((id) => byId.get(String(id))).filter(Boolean);
 
   return (
     <div style={styles.page}>

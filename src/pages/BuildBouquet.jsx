@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Minus, Trash2, Sparkles, ShoppingBag, Check } from 'lucide-react';
 import Navbar from '../components/Navbar';
-import { BOUQUET_FLOWERS } from '../data/bouquetFlowers';
+import { fetchProducts } from '../services/products';
 import { useCart } from '../context/CartContext';
 
 const DELIVERY_OPTIONS = [
@@ -356,8 +356,19 @@ export default function BuildBouquet() {
   const isNarrow = useIsNarrow(900);
   const isMobile = useIsNarrow(560);
 
-  // Fixed, curated palette of buildable flowers (see data/bouquetFlowers.js).
-  const products = BOUQUET_FLOWERS;
+  // Buildable flowers come live from the backend (single source of truth).
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    fetchProducts()
+      .then((list) => active && setProducts(list))
+      .finally(() => active && setLoading(false));
+    return () => {
+      active = false;
+    };
+  }, []);
 
   // Selected stems keyed by product id: { [id]: { id, name, price, image, qty } }
   const [selected, setSelected] = useState({});
@@ -503,6 +514,10 @@ export default function BuildBouquet() {
           </p>
 
           <div style={gridStyle}>
+            {loading && <p style={styles.loading}>Loading flowers…</p>}
+            {!loading && products.length === 0 && (
+              <p style={styles.loading}>No flowers available yet.</p>
+            )}
             {products.map((product) => {
                 const sel = selected[product.id];
                 return (
