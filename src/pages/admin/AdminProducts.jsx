@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { Pencil, Trash2, Plus } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Pencil, Trash2, Plus, Upload } from 'lucide-react';
 import AdminLayout from '../../components/AdminLayout';
 import { ui, Modal } from '../../components/admin/ui';
 import {
@@ -7,6 +7,7 @@ import {
   createProduct,
   updateProduct,
   deleteProduct,
+  uploadImage,
 } from '../../services/api';
 
 const CATEGORIES = ['Birthday', 'Anniversary', 'Decoration', 'Other'];
@@ -44,6 +45,24 @@ export default function AdminProducts() {
   const [editingId, setEditingId] = useState(null); // null => creating
   const [form, setForm] = useState(EMPTY);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef(null);
+
+  const handleUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    setError('');
+    try {
+      const url = await uploadImage(file);
+      setForm((f) => ({ ...f, image: url }));
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
 
   const load = async () => {
     setLoading(true);
@@ -313,9 +332,33 @@ export default function AdminProducts() {
                 style={{ ...ui.input, marginBottom: 0 }}
                 value={form.image}
                 onChange={(e) => setForm({ ...form, image: e.target.value })}
-                placeholder="/image/products/rose.jpg  (or pick below)"
+                placeholder="Upload a file, or paste an image URL"
               />
             </div>
+
+            {/* Upload from computer */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleUpload}
+              style={{ display: 'none' }}
+            />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              style={{
+                ...ui.ghostBtn,
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 8,
+                marginBottom: 14,
+                ...(uploading ? { opacity: 0.6, cursor: 'not-allowed' } : {}),
+              }}
+            >
+              <Upload size={15} /> {uploading ? 'Uploading…' : 'Upload from computer'}
+            </button>
 
             <p style={{ fontSize: 12, color: '#8a8a8a', margin: '0 0 8px' }}>
               Or select from existing images:
