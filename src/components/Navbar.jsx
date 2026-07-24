@@ -22,8 +22,8 @@ const NAV_LINKS_BY_VARIANT = {
 const styles = {
   navbar: {
     background: '#f7e9ee',
-    padding: '20px 40px',
-    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.06)',
+    padding: '6px 32px',
+    boxShadow: '0 3px 10px rgba(0, 0, 0, 0.05)',
     position: 'relative',
     zIndex: 10,
   },
@@ -38,7 +38,7 @@ const styles = {
   leftGroup: {
     display: 'flex',
     alignItems: 'center',
-    gap: 40,
+    gap: 32,
     flexShrink: 0,
   },
   logo: {
@@ -54,10 +54,10 @@ const styles = {
   links: {
     display: 'flex',
     alignItems: 'center',
-    gap: 28,
+    gap: 22,
   },
   link: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 400,
     color: '#4a4a4a',
     textDecoration: 'none',
@@ -66,23 +66,23 @@ const styles = {
   actions: {
     display: 'flex',
     alignItems: 'center',
-    gap: 12,
+    gap: 10,
     flexShrink: 0,
   },
   search: {
     display: 'flex',
     alignItems: 'center',
-    gap: 8,
+    gap: 7,
     background: '#f0d9e3',
     borderRadius: 999,
-    padding: '10px 16px',
-    minWidth: 170,
+    padding: '6px 14px',
+    minWidth: 150,
   },
   searchInput: {
     border: 'none',
     outline: 'none',
     background: 'transparent',
-    fontSize: 13,
+    fontSize: 12,
     width: '100%',
   },
   iconBtn: {
@@ -91,7 +91,7 @@ const styles = {
     color: '#2a2420',
     cursor: 'pointer',
     display: 'flex',
-    padding: 4,
+    padding: 3,
     position: 'relative',
   },
   badge: {
@@ -114,13 +114,13 @@ const styles = {
   logoutBtn: {
     display: 'inline-flex',
     alignItems: 'center',
-    gap: 6,
+    gap: 5,
     background: '#5c2436',
     color: '#fff',
     border: 'none',
     borderRadius: 999,
-    padding: '9px 16px',
-    fontSize: 13,
+    padding: '6px 14px',
+    fontSize: 12,
     fontWeight: 600,
     cursor: 'pointer',
   },
@@ -193,7 +193,7 @@ export default function Navbar({ variant = 'landing' }) {
           </nav>
 
           <form style={styles.search} onSubmit={handleSearch}>
-            <Search size={16} color="#5c534d" />
+            <Search size={15} color="#5c534d" />
             <input
               type="text"
               placeholder="Search for blooms..."
@@ -204,21 +204,21 @@ export default function Navbar({ variant = 'landing' }) {
             />
           </form>
           <Link to="/wishlist" style={styles.iconBtn} aria-label="Wishlist">
-            <Heart size={20} />
+            <Heart size={18} />
             {count > 0 && <span style={styles.badge}>{count}</span>}
           </Link>
           <Link to="/checkout" style={styles.iconBtn} aria-label="Cart">
-            <ShoppingBag size={20} />
+            <ShoppingBag size={18} />
             {cartCount > 0 && <span style={styles.badge}>{cartCount}</span>}
           </Link>
 
           {isDashboard ? (
             <button style={styles.logoutBtn} onClick={handleLogout} aria-label="Log out">
-              <LogOut size={16} /> Logout
+              <LogOut size={14} /> Logout
             </button>
           ) : (
             <Link to="/my-account" style={styles.iconBtn} aria-label="My Account">
-              <User size={20} />
+              <User size={18} />
             </Link>
           )}
         </div>

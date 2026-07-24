@@ -10,8 +10,9 @@ import {
 import Navbar from '../components/Navbar';
 import { useCart } from '../context/CartContext';
 import { createOrder, getMyOrders } from '../services/api';
+import { fetchProducts } from '../services/products';
 
-const STEPS = ['Cart', 'Delivery', 'Payment', 'Confirm'];
+const STEPS = ['Cart', 'Delivery Details', 'Payment', 'Delivery'];
 
 const PAYMENT_METHODS = [
   { id: 'esewa', label: 'eSewa Mobile Wallet', chip: 'eSewa', chipBg: '#48b04a', chipFg: '#fff' },
@@ -226,6 +227,84 @@ const styles = {
     borderRadius: 10,
     marginBottom: 16,
   },
+  staleBox: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+    background: '#fff6e6',
+    border: '1px solid #f2d69a',
+    color: '#9a6b16',
+    fontSize: 12.5,
+    padding: '10px 14px',
+    borderRadius: 10,
+    marginBottom: 16,
+  },
+  staleBtn: {
+    background: '#9a6b16',
+    color: '#fff',
+    border: 'none',
+    borderRadius: 8,
+    padding: '6px 14px',
+    fontSize: 12,
+    fontWeight: 600,
+    cursor: 'pointer',
+    whiteSpace: 'nowrap',
+  },
+  overlay: {
+    position: 'fixed',
+    inset: 0,
+    background: 'rgba(43,20,28,0.5)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+    zIndex: 200,
+  },
+  successModal: {
+    background: '#fff',
+    borderRadius: 18,
+    padding: '34px 30px',
+    maxWidth: 360,
+    width: '100%',
+    textAlign: 'center',
+    boxShadow: '0 20px 50px rgba(0,0,0,0.25)',
+  },
+  successIcon: {
+    width: 64,
+    height: 64,
+    borderRadius: '50%',
+    background: '#3f7d4f',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    margin: '0 auto 18px',
+  },
+  successTitle: {
+    fontFamily: "'Cormorant Garamond', serif",
+    fontStyle: 'italic',
+    fontWeight: 600,
+    fontSize: 26,
+    color: '#5c2436',
+    margin: '0 0 8px',
+  },
+  successText: {
+    fontSize: 13.5,
+    color: '#8a3a4d',
+    lineHeight: 1.5,
+    margin: '0 0 22px',
+  },
+  successBtn: {
+    width: '100%',
+    padding: '13px',
+    background: '#8f3a4a',
+    color: '#fff',
+    border: 'none',
+    borderRadius: 12,
+    fontSize: 14,
+    fontWeight: 600,
+    cursor: 'pointer',
+  },
   emptyCart: {
     background: '#fff',
     borderRadius: 14,
@@ -276,12 +355,12 @@ const styles = {
   historyEmpty: { textAlign: 'center', padding: '30px 20px', color: '#8a3a4d', fontSize: 14 },
 };
 
-function Stepper({ current }) {
+function Stepper({ statuses }) {
   return (
     <div style={styles.stepper}>
       {STEPS.map((label, i) => {
-        const done = i < current;
-        const active = i === current;
+        const done = statuses[i] === 'done';
+        const active = statuses[i] === 'active';
         return (
           <div key={label} style={{ display: 'contents' }}>
             <div style={styles.step}>
@@ -336,9 +415,14 @@ export default function MyOrders() {
   const [payment, setPayment] = useState('esewa');
   const [error, setError] = useState('');
   const [placing, setPlacing] = useState(false);
+  const [placed, setPlaced] = useState(false); // success popup
 
   const [orders, setOrders] = useState([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
+
+  // Live product ids, to detect stale cart items (built before the catalogue
+  // moved to the DB) that would otherwise fail at checkout.
+  const [validIds, setValidIds] = useState(null); // null = still loading
 
   const loadOrders = () => {
     setLoadingOrders(true);
@@ -349,6 +433,28 @@ export default function MyOrders() {
   };
 
   useEffect(loadOrders, []);
+
+  useEffect(() => {
+    fetchProducts()
+      .then((list) => setValidIds(new Set(list.map((p) => String(p.id)))))
+      .catch(() => setValidIds(new Set()));
+  }, []);
+
+  const isStale = (ci) =>
+    validIds ? (ci.stems || []).some((s) => !validIds.has(String(s.id))) : false;
+  const staleItems = checkoutItems.filter(isStale);
+
+  // Step states: Cart is done; Delivery Details greens when filled; Payment
+  // greens when a method is picked; final Delivery activates when ready.
+  const detailsFilled =
+    form.firstName && form.lastName && form.phone && form.address && form.city;
+  const paymentSelected = !!payment;
+  const stepStatuses = [
+    'done',
+    detailsFilled ? 'done' : 'active',
+    paymentSelected ? 'done' : 'todo',
+    detailsFilled && paymentSelected && staleItems.length === 0 ? 'active' : 'todo',
+  ];
 
   const setField = (key) => (e) => setForm({ ...form, [key]: e.target.value });
 
@@ -368,6 +474,10 @@ export default function MyOrders() {
     setError('');
     if (!form.firstName || !form.lastName || !form.phone || !form.address || !form.city) {
       setError('Please fill in your name, phone, address and city.');
+      return;
+    }
+    if (staleItems.length > 0) {
+      setError('Some items are no longer available. Please remove them below to continue.');
       return;
     }
 
@@ -407,7 +517,7 @@ export default function MyOrders() {
       // Only clear what was actually ordered — unselected lines stay in the cart.
       removeMany(checkoutItems.map((ci) => ci.cartId));
       loadOrders();
-      navigate('/my-orders', { replace: true, state: {} });
+      setPlaced(true); // show the success popup
     } catch (err) {
       setError(err.message);
     } finally {
@@ -421,7 +531,7 @@ export default function MyOrders() {
     <div style={styles.page}>
       <Navbar variant="dashboard" />
       <div style={styles.container}>
-        {hasCart && <Stepper current={1} />}
+        {hasCart && <Stepper statuses={stepStatuses} />}
 
         {hasCart ? (
           <div style={{ ...styles.layout, ...(isNarrow ? styles.layoutNarrow : {}) }}>
@@ -431,14 +541,29 @@ export default function MyOrders() {
                 <h2 style={styles.cardTitle}>Delivery Details</h2>
                 {error && <div style={styles.errorBox}>{error}</div>}
 
+                {staleItems.length > 0 && (
+                  <div style={styles.staleBox}>
+                    <span>
+                      {staleItems.map((ci) => ci.name).join(', ')}{' '}
+                      {staleItems.length === 1 ? 'is' : 'are'} no longer available.
+                    </span>
+                    <button
+                      style={styles.staleBtn}
+                      onClick={() => removeMany(staleItems.map((ci) => ci.cartId))}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                )}
+
                 <div style={styles.grid2}>
                   <div style={styles.field}>
                     <label style={styles.label}>First Name</label>
-                    <input style={styles.input} placeholder="Aria" value={form.firstName} onChange={setField('firstName')} />
+                    <input style={styles.input} placeholder="First name" value={form.firstName} onChange={setField('firstName')} />
                   </div>
                   <div style={styles.field}>
                     <label style={styles.label}>Last Name</label>
-                    <input style={styles.input} placeholder="Thapa" value={form.lastName} onChange={setField('lastName')} />
+                    <input style={styles.input} placeholder="Last name" value={form.lastName} onChange={setField('lastName')} />
                   </div>
                 </div>
 
@@ -546,9 +671,12 @@ export default function MyOrders() {
               </div>
 
               <button
-                style={{ ...styles.placeBtn, ...(placing ? styles.btnDisabled : {}) }}
+                style={{
+                  ...styles.placeBtn,
+                  ...(placing || staleItems.length > 0 ? styles.btnDisabled : {}),
+                }}
                 onClick={placeOrder}
-                disabled={placing}
+                disabled={placing || staleItems.length > 0}
               >
                 {placing ? 'Placing…' : 'Place Order'} <ArrowRight size={16} />
               </button>
@@ -588,6 +716,24 @@ export default function MyOrders() {
           </div>
         ))}
       </div>
+
+      {/* -------- Success popup -------- */}
+      {placed && (
+        <div style={styles.overlay} onClick={() => setPlaced(false)}>
+          <div style={styles.successModal} onClick={(e) => e.stopPropagation()}>
+            <div style={styles.successIcon}>
+              <Check size={34} color="#fff" />
+            </div>
+            <h3 style={styles.successTitle}>Order Placed Successfully!</h3>
+            <p style={styles.successText}>
+              Thank you for shopping with Florafy. Your blooms are on their way 🌸
+            </p>
+            <button style={styles.successBtn} onClick={() => setPlaced(false)}>
+              View My Orders
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

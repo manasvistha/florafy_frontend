@@ -7,6 +7,25 @@ import { useWishlist } from '../context/WishlistContext';
 
 const CATEGORIES = ['All Flowers', 'Birthday', 'Anniversary', 'Decoration'];
 
+// Cards per row by viewport (page uses inline styles, so no CSS media queries):
+// 5 on large desktop, 3 on tablet, 2 on mobile.
+function useColumns() {
+  const read = () => {
+    if (typeof window === 'undefined') return 5;
+    const w = window.innerWidth;
+    if (w <= 560) return 2;
+    if (w <= 900) return 3;
+    return 5;
+  };
+  const [cols, setCols] = useState(read);
+  useEffect(() => {
+    const onResize = () => setCols(read());
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+  return cols;
+}
+
 const styles = {
   page: {
     background: '#f7e9ee',
@@ -20,14 +39,15 @@ const styles = {
   },
   pillRow: {
     display: 'flex',
-    gap: 14,
-    marginBottom: 40,
+    flexWrap: 'wrap',
+    gap: 9,
+    marginBottom: 28,
   },
   pill: {
-    padding: '11px 24px',
-    borderRadius: 999,
+    padding: '7px 16px',
+    borderRadius: 20,
     border: '1.5px solid #e9bccb',
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: 600,
     cursor: 'pointer',
     background: '#fff',
@@ -41,18 +61,18 @@ const styles = {
   headerRow: {
     textAlign: 'center',
     position: 'relative',
-    marginBottom: 36,
+    marginBottom: 28,
   },
   title: {
     fontFamily: "'Cormorant Garamond', serif",
     fontStyle: 'italic',
     fontWeight: 600,
-    fontSize: 38,
+    fontSize: 30,
     color: '#5c2436',
-    margin: '0 0 8px',
+    margin: '0 0 6px',
   },
   subtitle: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: 500,
     letterSpacing: 0.4,
     color: '#8a3a4d',
@@ -61,8 +81,8 @@ const styles = {
   viewAll: {
     position: 'absolute',
     right: 0,
-    top: 12,
-    fontSize: 12,
+    top: 8,
+    fontSize: 11,
     fontWeight: 600,
     letterSpacing: 0.5,
     color: '#5c2436',
@@ -70,7 +90,6 @@ const styles = {
   },
   grid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(4, 1fr)',
     gap: 20,
   },
   card: {
@@ -149,6 +168,7 @@ const styles = {
 export default function Dashboard() {
   const [activeCategory, setActiveCategory] = useState('All Flowers');
   const { isWished, toggle } = useWishlist();
+  const columns = useColumns();
 
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -200,7 +220,9 @@ export default function Dashboard() {
           <Link to="/shop" style={styles.viewAll}>VIEW ALL</Link>
         </div>
 
-        <div style={styles.grid}>
+        <div
+          style={{ ...styles.grid, gridTemplateColumns: `repeat(${columns}, 1fr)` }}
+        >
           {loading && <p style={styles.empty}>Loading bouquets…</p>}
           {!loading && visibleProducts.length === 0 && (
             <p style={styles.empty}>No bouquets in this category yet.</p>

@@ -363,7 +363,8 @@ export default function BuildBouquet() {
   useEffect(() => {
     let active = true;
     fetchProducts()
-      .then((list) => active && setProducts(list))
+      // Only single stems the admin flagged as buildable — not full bouquets.
+      .then((list) => active && setProducts(list.filter((p) => p.buildable)))
       .finally(() => active && setLoading(false));
     return () => {
       active = false;
