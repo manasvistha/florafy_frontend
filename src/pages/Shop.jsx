@@ -1,17 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Heart, Plus, CalendarDays, Wallet, Truck, Search } from 'lucide-react';
+import { Heart, Plus, CalendarDays, Wallet, Search } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import { fetchProducts } from '../services/products';
 import { useWishlist } from '../context/WishlistContext';
 
 const CATEGORIES = ['All Flowers', 'Birthday', 'Anniversary', 'Decoration'];
 const OCCASIONS = ['Birthday', 'Anniversary', 'Decoration'];
-const DELIVERY_OPTIONS = [
-  { id: 'express', label: 'Express (2hr)', hint: 'Fastest availability' },
-  { id: 'sameday', label: 'Same Day', hint: 'By 6:00 PM' },
-  { id: 'scheduled', label: 'Scheduled', hint: 'Choose a date' },
-];
 
 const PRICE_MIN = 200;
 const PRICE_MAX = 1500;
@@ -510,38 +505,6 @@ export default function Shop() {
             <span style={styles.pricePill}>Min: Rs. {PRICE_MIN}</span>
             <span style={styles.pricePill}>Max: Rs. {draft.maxPrice.toLocaleString()}</span>
           </div>
-
-          {/* Delivery */}
-          <div style={styles.sectionLabel}>
-            <Truck size={14} /> Delivery
-          </div>
-          {DELIVERY_OPTIONS.map((opt) => {
-            const active = draft.delivery === opt.id;
-            return (
-              <div
-                key={opt.id}
-                style={{ ...styles.deliveryCard, ...(active ? styles.deliveryCardActive : {}) }}
-                onClick={() => setDraft((d) => ({ ...d, delivery: opt.id }))}
-              >
-                <div>
-                  <p style={styles.deliveryLabel}>{opt.label}</p>
-                  <p style={styles.deliveryHint}>{opt.hint}</p>
-                </div>
-                <span style={{ ...styles.radioOuter, ...(active ? styles.radioChecked : {}) }}>
-                  {active && (
-                    <span
-                      style={{
-                        width: 8,
-                        height: 8,
-                        borderRadius: '50%',
-                        background: '#fff',
-                      }}
-                    />
-                  )}
-                </span>
-              </div>
-            );
-          })}
 
           <button style={styles.applyBtn} onClick={applyFilters}>
             APPLY FILTERS
