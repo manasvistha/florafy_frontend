@@ -1,164 +1,198 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import Navbar from "../components/Navbar";
-import LoginImage from "../assets/Login.png";
 import { loginUser } from "../services/api";
 import { useWishlist } from "../context/WishlistContext";
 import { useCart } from "../context/CartContext";
 
+// Auto-playing photos on the image panel (matches the landing hero).
+const SLIDES = [
+  "/image/hero-bouquet.jpg",
+  "/image/products/rose.jpg",
+  "/image/products/mixed.jpg",
+  "/image/products/rosepink.jpg",
+];
+
 const styles = {
   page: {
     minHeight: "calc(100vh - 80px)",
-    background: "#f7e9ee",
+    background:
+      "linear-gradient(160deg, #f7e9ee 0%, #fbeef2 45%, #f4dce4 100%)",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
     padding: "40px 20px",
     fontFamily: "'Poppins', sans-serif",
+    position: "relative",
+    overflow: "hidden",
   },
-
+  blob1: {
+    position: "absolute",
+    width: 420,
+    height: 420,
+    top: "-10%",
+    right: "-4%",
+    borderRadius: "50%",
+    background: "radial-gradient(circle, rgba(201,111,134,0.25), transparent 70%)",
+    filter: "blur(30px)",
+    pointerEvents: "none",
+  },
+  blob2: {
+    position: "absolute",
+    width: 360,
+    height: 360,
+    bottom: "-8%",
+    left: "-5%",
+    borderRadius: "50%",
+    background: "radial-gradient(circle, rgba(233,188,203,0.4), transparent 70%)",
+    filter: "blur(30px)",
+    pointerEvents: "none",
+  },
   card: {
-    width: "1100px",
-    background: "#edd1db",
-    borderRadius: "20px",
+    position: "relative",
+    zIndex: 2,
+    width: "1040px",
+    maxWidth: "100%",
+    background: "rgba(255,255,255,0.55)",
+    backdropFilter: "blur(22px)",
+    WebkitBackdropFilter: "blur(22px)",
+    border: "1px solid rgba(255,255,255,0.7)",
+    borderRadius: "28px",
     display: "grid",
     gridTemplateColumns: "1fr 1fr",
     overflow: "hidden",
-    boxShadow: "0 12px 30px rgba(177, 135, 154, 0.18)",
+    boxShadow: "0 30px 70px rgba(92,36,54,0.18)",
   },
-
-  imageContainer: {
-    padding: "40px",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    background: "#FCF3F6",
+  imageContainer: { position: "relative", overflow: "hidden", minHeight: 560 },
+  slide: {
+    position: "absolute",
+    inset: 0,
+    backgroundSize: "cover",
+    backgroundPosition: "center",
   },
-
-  image: {
-    width: "100%",
-    maxWidth: "450px",
-    height: "550px",
-    objectFit: "cover",
-    borderRadius: "18px",
-    boxShadow: "0 8px 25px rgba(0,0,0,.15)",
+  imageOverlay: {
+    position: "absolute",
+    inset: 0,
+    background:
+      "linear-gradient(180deg, rgba(42,18,24,0.10) 40%, rgba(42,18,24,0.45) 100%)",
   },
-
+  imageBadge: {
+    position: "absolute",
+    bottom: 26,
+    left: 26,
+    right: 26,
+    padding: "16px 20px",
+    borderRadius: 18,
+    background: "rgba(255,255,255,0.68)",
+    backdropFilter: "blur(18px)",
+    WebkitBackdropFilter: "blur(18px)",
+    border: "1px solid rgba(255,255,255,0.85)",
+    boxShadow: "0 12px 30px rgba(92,36,54,0.16)",
+  },
+  badgeTitle: {
+    fontFamily: "'Cormorant Garamond', serif",
+    fontStyle: "italic",
+    fontSize: 22,
+    fontWeight: 600,
+    color: "#5c2436",
+    margin: "0 0 3px",
+  },
+  badgeText: { fontSize: 12.5, color: "#6a5560", margin: 0 },
   form: {
-    padding: "70px 60px",
+    padding: "64px 56px",
     display: "flex",
     flexDirection: "column",
     justifyContent: "center",
   },
-
+  eyebrow: {
+    fontSize: 12,
+    fontWeight: 600,
+    letterSpacing: 2,
+    textTransform: "uppercase",
+    color: "#8f3a4a",
+    marginBottom: 12,
+  },
   heading: {
-    fontSize: "46px",
-    fontWeight: "700",
-    color: "#1b5e20",
-    marginBottom: "10px",
+    fontFamily: "'Cormorant Garamond', serif",
+    fontStyle: "italic",
+    fontSize: "44px",
+    fontWeight: 600,
+    color: "#5c2436",
+    margin: "0 0 8px",
   },
-
-  subtext: {
-    fontSize: "18px",
-    color: "#4e6655",
-    marginBottom: "20px",
-  },
-
+  subtext: { fontSize: "15px", color: "#6a5560", marginBottom: "26px" },
   errorBox: {
-    background: "#fdecea",
+    background: "rgba(253,236,234,0.9)",
     border: "1px solid #f5c2c0",
     color: "#c62828",
     fontSize: "14px",
     padding: "10px 14px",
-    borderRadius: "8px",
+    borderRadius: "10px",
     marginBottom: "20px",
   },
-
   label: {
-    fontSize: "15px",
-    fontWeight: "600",
+    fontSize: "13.5px",
+    fontWeight: 600,
     marginBottom: "8px",
-    color: "#333",
+    color: "#4a3b40",
+    display: "block",
   },
-
   input: {
     width: "100%",
     padding: "14px 16px",
-    borderRadius: "8px",
-    border: "1px solid #d9b8c4",
+    borderRadius: "12px",
+    border: "1px solid rgba(217,184,196,0.8)",
+    background: "rgba(255,255,255,0.7)",
     fontSize: "15px",
     outline: "none",
     marginBottom: "20px",
     boxSizing: "border-box",
+    fontFamily: "inherit",
   },
-
-  inputError: {
-    border: "1px solid #e57373",
-  },
-
+  inputError: { border: "1px solid #e57373" },
   forgotRow: {
     display: "flex",
     justifyContent: "flex-end",
     marginTop: "-10px",
-    marginBottom: "25px",
+    marginBottom: "24px",
   },
-
-  forgotLink: {
-    fontSize: "13px",
-    color: "#d32f2f",
-    textDecoration: "none",
-  },
-
+  forgotLink: { fontSize: "13px", color: "#8f3a4a", textDecoration: "none", fontWeight: 500 },
   loginBtn: {
     width: "100%",
-    padding: "14px",
-    background: "#2e5d2f",
+    padding: "15px",
+    background: "linear-gradient(135deg, #c96f86 0%, #8f3a4a 55%, #5c2436 100%)",
     color: "#fff",
     border: "none",
-    borderRadius: "8px",
-    fontSize: "15px",
-    fontWeight: "600",
+    borderRadius: "999px",
+    fontSize: "14px",
+    fontWeight: 600,
+    letterSpacing: 0.5,
     cursor: "pointer",
-    marginBottom: "25px",
+    marginBottom: "24px",
+    boxShadow: "0 14px 30px rgba(143,58,74,0.30)",
   },
-
-  loginBtnDisabled: {
-    opacity: 0.7,
-    cursor: "not-allowed",
-  },
-
-  socialRow: {
-    display: "flex",
-    gap: "12px",
-    marginBottom: "30px",
-  },
-
+  loginBtnDisabled: { opacity: 0.7, cursor: "not-allowed" },
+  socialRow: { display: "flex", gap: "12px", marginBottom: "28px" },
   socialBtn: {
     flex: 1,
     padding: "12px",
-    borderRadius: "8px",
-    border: "1px solid #ddd",
-    background: "#FFF8FA",
+    borderRadius: "999px",
+    border: "1px solid rgba(255,255,255,0.8)",
+    background: "rgba(255,255,255,0.55)",
+    backdropFilter: "blur(10px)",
+    WebkitBackdropFilter: "blur(10px)",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
     gap: "8px",
     cursor: "pointer",
-    fontWeight: "500",
-    fontSize: "14px",
+    fontWeight: 500,
+    fontSize: "13.5px",
+    color: "#4a3b40",
   },
-
-  footerText: {
-    textAlign: "center",
-    fontSize: "14px",
-    color: "#555",
-  },
-
-  signUpLink: {
-    color: "#2962ff",
-    textDecoration: "none",
-    fontWeight: "600",
-  },
+  footerText: { textAlign: "center", fontSize: "14px", color: "#6a5560" },
+  signUpLink: { color: "#8f3a4a", textDecoration: "none", fontWeight: 600 },
 };
 
 function GoogleIcon() {
@@ -192,6 +226,12 @@ export default function LoginPage() {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [slide, setSlide] = useState(0);
+
+  useEffect(() => {
+    const id = setInterval(() => setSlide((i) => (i + 1) % SLIDES.length), 4000);
+    return () => clearInterval(id);
+  }, []);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -234,53 +274,71 @@ export default function LoginPage() {
       <Navbar />
 
       <div style={styles.page}>
-        <div style={styles.card}>
+        <div style={styles.blob1} />
+        <div style={styles.blob2} />
 
+        <motion.div
+          style={styles.card}
+          initial={{ opacity: 0, y: 30, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+        >
           <div style={styles.imageContainer}>
-            <img
-              src={LoginImage}
-              alt="Flowers"
-              style={styles.image}
-            />
+            <AnimatePresence>
+              <motion.div
+                key={slide}
+                style={{ ...styles.slide, backgroundImage: `url(${SLIDES[slide]})` }}
+                initial={{ opacity: 0, scale: 1.12 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ opacity: { duration: 1.1 }, scale: { duration: 4.5, ease: "easeOut" } }}
+              />
+            </AnimatePresence>
+            <div style={styles.imageOverlay} />
+            <motion.div
+              style={styles.imageBadge}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4, duration: 0.6 }}
+            >
+              <p style={styles.badgeTitle}>Welcome back to Florafy</p>
+              <p style={styles.badgeText}>
+                Your bouquets, wishlist and orders are right where you left them.
+              </p>
+            </motion.div>
           </div>
 
-          <div style={styles.form}>
-
+          <motion.div
+            style={styles.form}
+            initial={{ opacity: 0, x: 24 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2, duration: 0.6 }}
+          >
+            <span style={styles.eyebrow}>Sign In</span>
             <h1 style={styles.heading}>Welcome back</h1>
-
-            <p style={styles.subtext}>
-              Welcome back! Please enter your details.
-            </p>
+            <p style={styles.subtext}>Welcome back! Please enter your details.</p>
 
             {error && <div style={styles.errorBox}>{error}</div>}
 
             <form onSubmit={handleLogin}>
               <label style={styles.label}>Email address</label>
-
               <input
                 type="email"
                 name="email"
                 placeholder="Enter your email"
                 value={formData.email}
                 onChange={handleChange}
-                style={{
-                  ...styles.input,
-                  ...(error ? styles.inputError : {}),
-                }}
+                style={{ ...styles.input, ...(error ? styles.inputError : {}) }}
               />
 
               <label style={styles.label}>Password</label>
-
               <input
                 type="password"
                 name="password"
                 placeholder="Enter your password"
                 value={formData.password}
                 onChange={handleChange}
-                style={{
-                  ...styles.input,
-                  ...(error ? styles.inputError : {}),
-                }}
+                style={{ ...styles.input, ...(error ? styles.inputError : {}) }}
               />
 
               <div style={styles.forgotRow}>
@@ -289,16 +347,15 @@ export default function LoginPage() {
                 </a>
               </div>
 
-              <button
+              <motion.button
                 type="submit"
                 disabled={loading}
-                style={{
-                  ...styles.loginBtn,
-                  ...(loading ? styles.loginBtnDisabled : {}),
-                }}
+                whileHover={{ scale: loading ? 1 : 1.02 }}
+                whileTap={{ scale: loading ? 1 : 0.98 }}
+                style={{ ...styles.loginBtn, ...(loading ? styles.loginBtnDisabled : {}) }}
               >
                 {loading ? "Logging in..." : "Login"}
-              </button>
+              </motion.button>
             </form>
 
             <div style={styles.socialRow}>
@@ -306,7 +363,6 @@ export default function LoginPage() {
                 <GoogleIcon />
                 Sign in with Google
               </button>
-
               <button style={styles.socialBtn}>
                 <AppleIcon />
                 Sign in with Apple
@@ -319,10 +375,8 @@ export default function LoginPage() {
                 Sign Up
               </Link>
             </p>
-
-          </div>
-
-        </div>
+          </motion.div>
+        </motion.div>
       </div>
     </>
   );
