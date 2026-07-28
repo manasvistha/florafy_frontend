@@ -106,6 +106,7 @@ const styles = {
     position: 'relative',
     width: '100%',
     aspectRatio: '1 / 1',
+    overflow: 'hidden',
   },
   image: {
     width: '100%',
@@ -198,12 +199,82 @@ export default function Dashboard() {
     <div style={styles.page}>
       <Navbar variant="dashboard" />
 
+      {/* Premium micro-interactions for the category pills and product cards.
+          Pure CSS hover (like Tailwind group / group-hover) — no logic changed. */}
+      <style>{`
+        /* Category filter pills */
+        .ff-pill {
+          cursor: pointer;
+          transition: transform 300ms cubic-bezier(0.22,1,0.36,1),
+                      box-shadow 300ms ease, background 300ms ease,
+                      border-color 300ms ease, color 300ms ease;
+        }
+        .ff-pill:hover {
+          transform: translateY(-2px) scale(1.02);
+          box-shadow: 0 8px 20px rgba(111,41,64,0.16);
+        }
+        /* Inactive pills get the soft rose fill + darker border/text on hover.
+           :not(.ff-pill-active) leaves the active maroon pill untouched. */
+        .ff-pill:not(.ff-pill-active):hover {
+          background: #f7e2e9 !important;
+          border-color: #6F2940 !important;
+          color: #6F2940 !important;
+        }
+
+        /* Product card (the group) */
+        .ff-card {
+          transition: transform 350ms cubic-bezier(0.22,1,0.36,1),
+                      box-shadow 350ms ease, background 350ms ease;
+        }
+        .ff-card:hover {
+          transform: translateY(-7px);
+          box-shadow: 0 22px 48px rgba(111,41,64,0.18) !important;
+          background: #fffdfd !important;
+        }
+
+        /* Gentle image zoom on card hover */
+        .ff-card-img {
+          transition: transform 500ms cubic-bezier(0.22,1,0.36,1);
+        }
+        .ff-card:hover .ff-card-img { transform: scale(1.04); }
+
+        /* Product name deepens + thickens subtly on card hover */
+        .ff-name { transition: color 300ms ease; }
+        .ff-card:hover .ff-name { color: #3D2A2A !important; font-weight: 700 !important; }
+
+        /* Wishlist heart — glassy, scales up on hover */
+        .ff-heart {
+          backdrop-filter: blur(6px);
+          -webkit-backdrop-filter: blur(6px);
+          transition: transform 250ms ease, background 250ms ease, box-shadow 250ms ease;
+        }
+        .ff-heart:hover {
+          transform: scale(1.1);
+          background: #ffffff !important;
+          box-shadow: 0 4px 12px rgba(111,41,64,0.18);
+        }
+
+        /* Add (+) button — pressable, darker rose, lifts on hover */
+        .ff-add {
+          transition: transform 300ms ease, background 300ms ease, box-shadow 300ms ease;
+        }
+        .ff-add:hover {
+          transform: translateY(-1px) scale(1.05);
+          background: #6F2940 !important;
+          box-shadow: 0 8px 18px rgba(111,41,64,0.4);
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .ff-pill, .ff-card, .ff-card-img, .ff-name, .ff-heart, .ff-add { transition: none !important; }
+        }
+      `}</style>
+
       <div style={styles.container}>
         <div style={styles.pillRow}>
           {CATEGORIES.map((cat) => (
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
+              className={`ff-pill ${activeCategory === cat ? 'ff-pill-active' : ''}`}
               style={{
                 ...styles.pill,
                 ...(activeCategory === cat ? styles.pillActive : {}),
@@ -230,12 +301,14 @@ export default function Dashboard() {
           {visibleProducts.map((product, index) => (
             <Link
               to={`/flower/${product.id}`}
+              className="ff-card"
               style={styles.card}
               key={`${product.id}-${index}`}
             >
               <div style={styles.imageWrap}>
-                <img src={product.image} alt={product.name} style={styles.image} />
+                <img src={product.image} alt={product.name} className="ff-card-img" style={styles.image} />
                 <button
+                  className="ff-heart"
                   style={styles.heartBtn}
                   aria-label="Add to wishlist"
                   onClick={(e) => {
@@ -251,9 +324,10 @@ export default function Dashboard() {
                 </button>
               </div>
               <div style={styles.info}>
-                <p style={styles.name}>{product.name}</p>
+                <p className="ff-name" style={styles.name}>{product.name}</p>
                 <p style={styles.price}>Rs. {product.price}</p>
                 <button
+                  className="ff-add"
                   style={styles.addBtn}
                   aria-label="Add to cart"
                   onClick={(e) => {

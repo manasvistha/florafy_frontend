@@ -375,7 +375,7 @@ export default function FlowerDetails() {
             <p style={styles.price}>Rs. {product.price}</p>
             {hasStockInfo && (
               <p style={outOfStock ? styles.stockOut : styles.stockIn}>
-                {outOfStock ? 'Out of stock' : `In stock — ${product.stock} available`}
+                {outOfStock ? 'Out of stock' : 'In stock'}
               </p>
             )}
             {product.description && <p style={styles.description}>{product.description}</p>}

@@ -577,7 +577,7 @@ export default function Shop() {
                   <p style={styles.price}>Rs. {product.price}</p>
                   {product.stock !== null && product.stock !== undefined && (
                     <p style={product.stock > 0 ? styles.stockIn : styles.stockOut}>
-                      {product.stock > 0 ? `In stock (${product.stock})` : 'Out of stock'}
+                      {product.stock > 0 ? 'In stock' : 'Out of stock'}
                     </p>
                   )}
                   <button

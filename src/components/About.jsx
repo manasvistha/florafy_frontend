@@ -1,13 +1,6 @@
 import { motion } from 'framer-motion';
 import { Leaf, Wand2, Truck } from 'lucide-react';
 
-const STATS = [
-  { value: '2,800+', label: 'Happy Reviews' },
-  { value: '100%', label: 'Fresh Daily Cut' },
-  { value: '4 hrs', label: 'Express Delivery' },
-  { value: '50+', label: 'Seasonal Blooms' },
-];
-
 const FEATURES = [
   {
     icon: Leaf,
@@ -53,31 +46,6 @@ const styles = {
     color: '#5c2436',
     margin: '0 0 54px',
   },
-  statsRow: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(4, 1fr)',
-    gap: 18,
-    marginBottom: 64,
-  },
-  statCard: {
-    textAlign: 'center',
-    padding: '26px 18px',
-    borderRadius: 20,
-    background: 'rgba(255,255,255,0.55)',
-    backdropFilter: 'blur(18px)',
-    WebkitBackdropFilter: 'blur(18px)',
-    border: '1px solid rgba(255,255,255,0.6)',
-    boxShadow: '0 10px 30px rgba(92,36,54,0.07)',
-  },
-  statValue: {
-    fontFamily: "'Cormorant Garamond', serif",
-    fontStyle: 'italic',
-    fontWeight: 700,
-    fontSize: 38,
-    color: '#8f3a4a',
-    margin: '0 0 4px',
-  },
-  statLabel: { fontSize: 12.5, fontWeight: 500, color: '#5c534d', margin: 0 },
   grid: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 26 },
   card: {
     padding: '34px 30px',
@@ -141,25 +109,6 @@ export default function About() {
         >
           Crafted with care, delivered with love
         </motion.h2>
-
-        {/* Stats */}
-        <div style={styles.statsRow}>
-          {STATS.map((s, i) => (
-            <motion.div
-              key={s.label}
-              style={styles.statCard}
-              custom={i}
-              variants={fadeUp}
-              initial="hidden"
-              whileInView="show"
-              viewport={{ once: true, amount: 0.4 }}
-              whileHover={{ y: -6, boxShadow: '0 18px 40px rgba(92,36,54,0.14)' }}
-            >
-              <p style={styles.statValue}>{s.value}</p>
-              <p style={styles.statLabel}>{s.label}</p>
-            </motion.div>
-          ))}
-        </div>
 
         {/* Feature cards */}
         <div style={styles.grid}>
